@@ -1,0 +1,37 @@
+def nazwaFunkcji(argumentJeden, ergumentDwa, argumentZWartosciaDomyslna="jakas wartosc")
+	"""
+	Komentarz do funkcji
+	"""
+	zmiennaLokalna = "stringi w cudzys³owach nie apostrofach"
+	return zmiennaLokalna
+
+def kolejnaFunkcjaOddalonaODwaPoziomyOdPoprzedniej():
+	pass
+
+
+def Klasa(object):
+	"""
+	Opis klasy
+	Jeœli klasa po niczym nie dziedziczy to powinna dziedziczyc po object
+	"""
+	__NAZWY_STA£YCH_PRYWATNYCH = "watroœæ"
+	_NAZWY_STA£YCH_PROTECTED = 1
+	PUBLICZNE_STA£E = "to jest publiczne"
+
+	def__init__(self, tuTakSamo="jak w funkcjach")
+		"""
+		Komentarz do metody
+		"""
+		pass
+
+	def wKlasachMetodyOddaloneTylkoOJedenPoziomOdPoprzedniej():
+		pass
+
+	def _metodaTypuProtectedZJednymPodkreœleniem()
+		pass
+
+	def __metodaTypuPrivateZDwomaPodkreœleniami
+		"""
+		Zamiast "" mozna w cudzys³owiu daæ coœ innego i to bedzie miêdzy ³¹czonymi stringami
+		"""
+		jeszcze£¹czenieStringów = "".join([pierwszy, "cos innego", drugie])

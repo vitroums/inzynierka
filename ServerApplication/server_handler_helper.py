@@ -28,7 +28,6 @@ class ServerHandlerHelper(BaseRequestHandler):
         file.close()
         print("From {}:{} -".format(self.client_address[0], self.client_address[1]), "file received ({})".format(path))
 
-
     def __receiveStreamSize(self):
         return int(self.request.recv(self.__BUFFER_SIZE).decode(self.__ENCODING), 2)
 

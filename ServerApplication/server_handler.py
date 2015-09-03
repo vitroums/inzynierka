@@ -2,13 +2,11 @@
 from uuid import uuid1
 from dropbox_api import DropboxApi
 
+
 class ClientServerHandler(ServerHandlerHelper):
     __DATA = ["country", "state", "city", "organization", "unit", "name", "email", "login"]
-    __dba = DropboxApi()
-    def handle(self):
-        """
 
-        """
+    def handle(self):
         command = self._receiveString().lower()
         if command == "new-user":
             self.__newUserCommand()
@@ -57,8 +55,6 @@ class ClientServerHandler(ServerHandlerHelper):
 
         return False
 
-
-
     def __newUser(self, uuid, data = None, certificateRequestFile = None):
         if data is not None:
             return ("cert.pem", "key.pem")
@@ -66,14 +62,11 @@ class ClientServerHandler(ServerHandlerHelper):
             return "cert.pem"
 
     def __saveUser(self, uuid, login, mail):
-        self.__dba._addUserToList(uuid.hex, login, mail)
-        self.__dba._createDatabae()
-        self.__dba._uploadFile("list.xml")
-        print("User has been added successfully!")
+        dropBoxApi = DropboxApi()
+        dropBoxApi.addNewUser(uuid, login, mail)
         pass
 
     def __newGroupCommadn(self):
         self._sendString("provide-data")
         data = self._receiveString().split(";")
-
         pass
