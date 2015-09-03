@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<Users>
+	<User guid="gg" mail="some@sed.de" nick="omg"/>
+	<User guid="dg" mail="omg@qwe.we" nick="asmg"/>
+	<User guid="e9a440b84ca911e5b16e8cfc02504811" mail="mail@example.com" nick="no123yman"/>
+	<User guid="f478eef84ca911e590f78cfc02504811" mail="mail@example.com" nick="no123yman"/>
+	<User guid="7915f7a24d6611e593768cfc02504811" mail="mail@example.com" nick="habba"/>
+	<User guid="bd996c384d6611e5830a8cfc02504811" mail="mail@example.com" nick="nanaba"/>
+	<User guid="0cd2dc9a4d6811e5bdca8cfc02504811" mail="mail@example.com" nick="n56546ba"/>
+	<User guid="3e12da264d6811e59fab8cfc02504811" mail="mail@example.com" nick="n568948546ba"/>
+	<User guid="72a6b6904da211e5bb798cfc02504811" mail="mail@example.com" nick="n568dd8546ba"/>
+	<User guid="a854f4464da211e5989c8cfc02504811" mail="mail@example.com" nick="n5ccvcdd8546ba"/>
+	<User guid="fcdc39144da211e5858a8cfc02504811" mail="mail@example.com" nick="n5ccARdd8546ba"/>
+	<User guid="9f81bc7a4da311e5ac258cfc02504811" mail="mail@example.com" nick="n5cccdd8546ba"/>
+</Users>
