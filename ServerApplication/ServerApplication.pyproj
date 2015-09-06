@@ -13,8 +13,10 @@
     <Name>ServerApplication</Name>
     <RootNamespace>ServerApplication</RootNamespace>
     <IsWindowsApplication>False</IsWindowsApplication>
-    <InterpreterId>{2af0f10d-7135-4994-9156-5d01c9c11b7e}</InterpreterId>
-    <InterpreterVersion>2.7</InterpreterVersion>
+    <InterpreterId>
+    </InterpreterId>
+    <InterpreterVersion>
+    </InterpreterVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -25,29 +27,46 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="CA\certificate_authority.py" />
+    <Compile Include="utils\configuration.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CA\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="dropbox_api.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="handlers\__init__.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="main.py" />
     <Compile Include="server.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="server_handler.py">
+    <Compile Include="handlers\client_server_handler.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="server_handler_helper.py">
+    <Compile Include="handlers\server_handler_helper.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="talker.py">
+    <Compile Include="utils\talker.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="utils\__init__.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <InterpreterReference Include="{2af0f10d-7135-4994-9156-5d01c9c11b7e}\2.7" />
     <InterpreterReference Include="{2af0f10d-7135-4994-9156-5d01c9c11b7e}\3.4" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Konwencja.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="CA\" />
+    <Folder Include="handlers\" />
+    <Folder Include="utils\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

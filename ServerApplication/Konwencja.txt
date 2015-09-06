@@ -9,7 +9,7 @@ def kolejnaFunkcjaOddalonaODwaPoziomyOdPoprzedniej():
 	pass
 
 
-def Klasa(object):
+def KlasaZWieloczêœciow¹Nazw¹(object):
 	"""
 	Opis klasy
 	Jeœli klasa po niczym nie dziedziczy to powinna dziedziczyc po object
