@@ -165,10 +165,41 @@ namespace Client
             return false;
         }
 
-        // getter do _userList
-        public List<User> GetUsersList()
+        // jeżeli nie istneje to dodanie uzytkowika
+        public List<User> AddUserIfNotExist(string guid, string email, string login)
         {
+            bool exist = false;
+            foreach (User u in _userList)
+            {
+                if (u.guid == guid)
+                {
+                    exist = true;
+                    break;
+                }
+            }
+            if (!exist)
+            {
+                User newUser = new User();
+                newUser.guid = guid;
+                newUser.mail = email;
+                newUser.nick = login;
+                _userList.Add(newUser);
+            }
             return _userList;
+        }
+
+        public List<string> GetFilesList(string guid)
+        {
+            List<string> files = new List<string>();
+            MetaData meta = _client.GetMetaData(_path+guid+"/", null, false, false);
+            for (int i = 0; i < meta.Contents.Count; i++ )
+            {
+                if (meta.Contents[i].Is_Dir == false)
+                {
+                    files.Add(meta.Contents[i].Name);
+                }
+            }
+            return files;
         }
     }
 

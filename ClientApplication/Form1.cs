@@ -20,6 +20,8 @@ namespace ClientApplication
         DropboxApi dba = new DropboxApi();
         SslClient sc;
         string GUID = "";
+        string email = "";
+        string login = "";
         bool Connected = false;
         bool ConnectedToGroup = false;
         
@@ -51,8 +53,8 @@ namespace ClientApplication
                 var city = Interaction.InputBox("Podaj nazwę miasta", "Miasto", "Gdansk");
                 var organization = Interaction.InputBox("Podaj nazwę organizacji", "Organizacja", "PG");
                 var unit = Interaction.InputBox("Podaj nazwę oddziału/jednostki", "Oddział", "ETI");
-                var email = Interaction.InputBox("Podaj email", "Email", "fail@example.com");
-                var login = Interaction.InputBox("Podaj login", "Login", "");
+                email = Interaction.InputBox("Podaj email", "Email", "fail@example.com");
+                login = Interaction.InputBox("Podaj login", "Login", "");
                 if (!ValidateCertPools(country, state, city, organization, unit, email, login))
                 {
                     Console.WriteLine("ERROR! Niepoprawne dane do wygenerowania certyfikatu");
@@ -95,7 +97,7 @@ namespace ClientApplication
                             GUID = guid;
                             textBox2.Text = Path.GetFullPath("cert2.pem");
                             Connected = true;
-                            UpdateGroupList();   
+                            UpdateLists(GUID, email, login);   
                         }
                         // client <- server "user-exists"
                         else
@@ -188,7 +190,7 @@ namespace ClientApplication
                         dba = new DropboxApi(selectedGroup);
                         Console.WriteLine("Successfully connected to {0} group!", selectedGroup);
                         dba.LoadDatabase();
-                        UpdateUserList();
+                        UpdateLists(GUID, email, login);
                     }
                     else
                     {
@@ -206,14 +208,17 @@ namespace ClientApplication
             }
 
         }
-        public void UpdateGroupList()
+        public void UpdateLists(string guid, string email, string login)
+        {
+            UpdateGroupList();
+            listBox2.DataSource = dba.AddUserIfNotExist(guid, email, login);
+            listBox3.DataSource = dba.GetFilesList(guid);
+        }
+        void UpdateGroupList()
         {
             listBox1.DataSource = dba.GetGroupsNamesList();
         }
-        public void UpdateUserList()
-        {
-            listBox2.DataSource = dba.GetUsersList();
-        }
+
         // choose cert
         private void ButtonChooseCertClick(object sender, EventArgs e)
         {
