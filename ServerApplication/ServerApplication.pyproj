@@ -26,6 +26,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="CA\certificate_authority.py" />
+    <Compile Include="handlers\client_server_handler.py" />
     <Compile Include="utils\configuration.py">
       <SubType>Code</SubType>
     </Compile>
@@ -40,9 +41,6 @@
     </Compile>
     <Compile Include="main.py" />
     <Compile Include="server.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="handlers\client_server_handler.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="handlers\server_handler_helper.py">
