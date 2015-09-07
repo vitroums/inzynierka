@@ -1,7 +1,7 @@
 ﻿from xml.etree import ElementTree as ET
 import xml.dom.minidom as MD
 import dropbox
-from talker import Talker
+from utils.talker import Talker
 
 
 class DropboxApi:

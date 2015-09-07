@@ -12,8 +12,9 @@ class ClientServerHandler(ServerHandlerHelper):
         """
         Tworzy handler dla serwera. Pobiera instancje klasy konfiguracji
         """
-        super().__init__(request, client_address, server)
         self.__ca = CertificateAuthority()
+        super().__init__(request, client_address, server)
+        
 
     def handle(self):
         """
@@ -37,7 +38,7 @@ class ClientServerHandler(ServerHandlerHelper):
             self._sendString("user-exists")
             return
         informations = self.__requestUserInformations()
-        certificate, keys = self.__generateCertificate(None)
+        certificate, keys = self.__ca.newCertificate(informations, None, name)
         self.__sendNewUserFiles(certificate, keys)
 
     def __requestUserData(self):

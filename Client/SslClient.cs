@@ -39,7 +39,7 @@ namespace Client
         private void FetchCertificates()
         {
             //TODO: Implement proper system o featching certificates
-            var certificate = File.ReadAllText("certificate.pem");
+            var certificate = File.ReadAllText("cert.crt");
             const string header = "-----BEGIN CERTIFICATE-----";
             const string footer = "-----END CERTIFICATE-----";
             var start = certificate.IndexOf(header, StringComparison.Ordinal) + header.Length;

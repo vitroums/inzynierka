@@ -46,83 +46,60 @@ namespace ClientApplication
         // new user
         private void ButtonNewUserClick(object sender, EventArgs e)
         {
-            using (SslClient stream = new SslClient("127.0.0.1", 9999))
+
+            var country = Interaction.InputBox("Podaj nazwę kraju", "Kraj", "PL");
+            var state = Interaction.InputBox("Podaj nazwę wojewodztwa/regionu", "Region", "Pomerania");
+            var city = Interaction.InputBox("Podaj nazwę miasta", "Miasto", "Gdansk");
+            var organization = Interaction.InputBox("Podaj nazwę organizacji", "Organizacja", "PG");
+            var unit = Interaction.InputBox("Podaj nazwę oddziału/jednostki", "Oddział", "ETI");
+            email = Interaction.InputBox("Podaj email", "Email", "fail@example.com");
+            login = Interaction.InputBox("Podaj login", "Login", "");
+            if (!ValidateCertPools(country, state, city, organization, unit, email, login))
             {
-                var country = Interaction.InputBox("Podaj nazwę kraju", "Kraj", "PL");
-                var state = Interaction.InputBox("Podaj nazwę wojewodztwa/regionu", "Region", "Pomerania");
-                var city = Interaction.InputBox("Podaj nazwę miasta", "Miasto", "Gdansk");
-                var organization = Interaction.InputBox("Podaj nazwę organizacji", "Organizacja", "PG");
-                var unit = Interaction.InputBox("Podaj nazwę oddziału/jednostki", "Oddział", "ETI");
-                email = Interaction.InputBox("Podaj email", "Email", "fail@example.com");
-                login = Interaction.InputBox("Podaj login", "Login", "");
-                if (!ValidateCertPools(country, state, city, organization, unit, email, login))
-                {
-                    Console.WriteLine("ERROR! Niepoprawne dane do wygenerowania certyfikatu");
-                    return;
-                }
-                var certPools = country + ";" + state + ";" + city + ";" + organization + ";" + unit + ";" + ";" + email + ";" + login;
+                Console.WriteLine("ERROR! Niepoprawne dane do wygenerowania certyfikatu");
+                return;
+            }
+            var certPools = country + ";" + state + ";" + city + ";" + organization + ";" + unit + ";" + login;
+            using (SslClient stream = new SslClient("127.0.0.1", 12345))
+            {
                 stream.SendString("new-user");
                 // client -> server "new-user"
                 string response = stream.ReceiveString();
-                // client <- server "new-user-type"
-                if (response == "new-user-type")
-                {
-                    stream.SendString("remote");
-                    // client -> server "remote"
-                    response = stream.ReceiveString();
-                    // client <- server "provide-data"
-                    if (response == "provide-data")
-                    {
-                        // country;state;city;organization;unit;name;email;login
-
-                        //const string data = "PL;pomerania;Gdansk;PG;ETI;;mail@example.com;n5cccdd8546ba";
-                        string nick = "nanaba";
-                        stream.SendString(certPools);
-                        // client -> server data
-                        response = stream.ReceiveString();
-                        // client <- server guid
-                        if (response != "user-exists")
-                        {
-                            string guid = response;
-                            stream.ReceiveFile("cert2.pem");
-                            // client <- server certificate
-                            stream.ReceiveFile("key2.pem");
-                            // client <- server key
-                            stream.SendString("done");
-                            // client -> server "done"
-
-                            Console.WriteLine("Registered new user:");
-                            Console.WriteLine("GUID: " + guid);
-                            Console.WriteLine("Nick: " + nick);
-                            GUID = guid;
-                            textBox2.Text = Path.GetFullPath("cert2.pem");
-                            Connected = true;
-                            UpdateLists(GUID, email, login);   
-                        }
-                        // client <- server "user-exists"
-                        else
-                        {
-                            Console.WriteLine("User already exists!");
-                        }
-                    }
-                    // client <- server "unknown-command"
-                    else
-                    {
-                        Console.WriteLine("Unknown command!");
-                    }
-
-                }
-                // client <- server "unknown-command"
-                else
+                // client <- server "provide-user-name"
+                if (response != "provide-user-name")
                 {
                     Console.WriteLine("Unknown command!");
                 }
+                stream.SendString(login);
+                response = stream.ReceiveString();
+                if (response != "provide-user-mail")
+                {
+                    Console.WriteLine("Unknown command!");
+                }
+                stream.SendString(email);
+                response = stream.ReceiveString();
+                if (response != "provide-user-data")
+                {
+                    Console.WriteLine("Unknown command!");
+                }
+                stream.SendString(certPools);
+                response = stream.ReceiveString();
+                if (response != "certificate-file")
+                {
+                    Console.WriteLine("Unknown command!");
+                }
+                stream.ReceiveFile("certyfikat.cer");
+                if (response != "keys-file")
+                {
+                    Console.WriteLine("Unknown command!");
+                }
+                stream.ReceiveFile("keys.key");
             }
         }
         // new group
         private void ButtonNewGroupClick(object sender, EventArgs e)
         {
-        using (SslClient stream = new SslClient("127.0.0.1", 9999))
+            using (SslClient stream = new SslClient("127.0.0.1", 9999))
             {
                 var nazwaGrupy = Interaction.InputBox("Podaj nazwę grupy", "Nowa grupa", "mojagrupa");
                 if (nazwaGrupy != "")

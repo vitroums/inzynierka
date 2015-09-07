@@ -10,8 +10,8 @@ class ServerHandlerHelper(BaseRequestHandler):
         """
         Tworzy instancję klasy i pobiera konfiguracje serwera.
         """
-        super().__init__(request, client_address, server)
         self._configuration = Configuration()
+        super().__init__(request, client_address, server)
 
     def _receiveString(self):
         """

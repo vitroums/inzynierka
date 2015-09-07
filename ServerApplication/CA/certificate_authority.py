@@ -34,7 +34,7 @@ class CertificateAuthority(object):
             self.__certificate, self.__keys = self.__newCaCertificate()
         else:
             self.__certificate = self.__loadCertificateFromFile(self.__configuration.certificateFile)
-            self.__keys = self.__loadPrivateKeyFromFile(self.__configuration.keyFile, self.__configuration.caPassword)
+            self.__keys = self.__loadPrivateKeyFromFile(self.__configuration.keysFile, self.__configuration.caPassword)
         if not self.__keys:
             raise IOError
 
