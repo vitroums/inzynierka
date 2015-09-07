@@ -188,6 +188,7 @@ namespace Client
             return _userList;
         }
 
+        // zaladowanie listy plikow uzytkownika 
         public List<string> GetFilesList(string guid)
         {
             List<string> files = new List<string>();
