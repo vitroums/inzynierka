@@ -8,7 +8,7 @@ namespace Client
 {
     public class Rest
     {
-        public X509Store getCertificates()
+        public X509Store GetCertificates()
         {
             Console.WriteLine("Getting certs..");
             var store = new X509Store(StoreLocation.LocalMachine);
