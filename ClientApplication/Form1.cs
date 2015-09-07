@@ -58,6 +58,7 @@ namespace ClientApplication
                     Console.WriteLine("ERROR! Niepoprawne dane do wygenerowania certyfikatu");
                     return;
                 }
+                var certPools = country + ";" + state + ";" + city + ";" + organization + ";" + unit + ";" + ";" + email + ";" + login;
                 stream.SendString("new-user");
                 // client -> server "new-user"
                 string response = stream.ReceiveString();
@@ -72,9 +73,9 @@ namespace ClientApplication
                     {
                         // country;state;city;organization;unit;name;email;login
 
-                        const string data = "PL;pomerania;Gdansk;PG;ETI;;mail@example.com;n5cccdd8546ba";
+                        //const string data = "PL;pomerania;Gdansk;PG;ETI;;mail@example.com;n5cccdd8546ba";
                         string nick = "nanaba";
-                        stream.SendString(data);
+                        stream.SendString(certPools);
                         // client -> server data
                         response = stream.ReceiveString();
                         // client <- server guid
