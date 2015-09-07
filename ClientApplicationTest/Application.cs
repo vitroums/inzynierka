@@ -10,8 +10,8 @@ namespace ClientApplicationTest
             var client = new DropboxApi();
             
             
-            //client.uploadFile("asd.txt", "sometrickygu1d");
-            var sl = client.getGroupsNamesList();
+            //client.UploadFile("asd.txt", "sometrickygu1d");
+            var sl = client.GetGroupsNamesList();
             Console.ReadKey();
             //using (SslClient stream = new SslClient("127.0.0.1", 9999))
             //{

@@ -42,10 +42,22 @@ namespace ClientApplication
 
         }
         // new user
-        private void button3_Click(object sender, EventArgs e)
+        private void ButtonNewUserClick(object sender, EventArgs e)
         {
             using (SslClient stream = new SslClient("127.0.0.1", 9999))
             {
+                var country = Interaction.InputBox("Podaj nazwę kraju", "Kraj", "PL");
+                var state = Interaction.InputBox("Podaj nazwę wojewodztwa/regionu", "Region", "Pomerania");
+                var city = Interaction.InputBox("Podaj nazwę miasta", "Miasto", "Gdansk");
+                var organization = Interaction.InputBox("Podaj nazwę organizacji", "Organizacja", "PG");
+                var unit = Interaction.InputBox("Podaj nazwę oddziału/jednostki", "Oddział", "ETI");
+                var email = Interaction.InputBox("Podaj email", "Email", "fail@example.com");
+                var login = Interaction.InputBox("Podaj login", "Login", "");
+                if (!ValidateCertPools(country, state, city, organization, unit, email, login))
+                {
+                    Console.WriteLine("ERROR! Niepoprawne dane do wygenerowania certyfikatu");
+                    return;
+                }
                 stream.SendString("new-user");
                 // client -> server "new-user"
                 string response = stream.ReceiveString();
@@ -82,7 +94,7 @@ namespace ClientApplication
                             GUID = guid;
                             textBox2.Text = Path.GetFullPath("cert2.pem");
                             Connected = true;
-                            updateGroupList();   
+                            UpdateGroupList();   
                         }
                         // client <- server "user-exists"
                         else
@@ -105,15 +117,18 @@ namespace ClientApplication
             }
         }
         // new group
-        private void button6_Click(object sender, EventArgs e)
+        private void ButtonNewGroupClick(object sender, EventArgs e)
         {
         using (SslClient stream = new SslClient("127.0.0.1", 9999))
             {
-                stream.SendString("new-group");
-                // client -> server "new-user"
-                string response = stream.ReceiveString();
-                // client <- server "new-user-type"
-                
+                var nazwaGrupy = Interaction.InputBox("Podaj nazwę grupy", "Nowa grupa", "mojagrupa");
+                if (nazwaGrupy != "")
+                {
+                    stream.SendString("new-group");
+                    // client -> server "new-user"
+                    string response = stream.ReceiveString();
+                    // client <- server "new-user-type"
+
                     if (response == "provide-data")
                     {
                         // country;state;city;organization;unit;name;email;login
@@ -141,7 +156,7 @@ namespace ClientApplication
                             GUID = guid;
                             textBox2.Text = Path.GetFullPath("cert2.pem");
                             Connected = true;
-                            updateGroupList();   
+                            UpdateGroupList();
                         }
                         // client <- server "user-exists"
                         else
@@ -154,11 +169,11 @@ namespace ClientApplication
                     {
                         Console.WriteLine("Unknown command!");
                     }
-
+                }
             }
         }
         // connect to group
-        private void button2_Click(object sender, EventArgs e)
+        private void ButtonConnectToGroupClick(object sender, EventArgs e)
         {
             if (Connected)
             {
@@ -167,12 +182,12 @@ namespace ClientApplication
                 string password = textBox3.Text;
                 if (password != "")
                 {
-                    if (dba.validatePassword(password, selectedGroup))
+                    if (dba.ValidatePassword(password, selectedGroup))
                     {
                         dba = new DropboxApi(selectedGroup);
                         Console.WriteLine("Successfully connected to {0} group!", selectedGroup);
-                        dba.loadDB();
-                        updateUserList();
+                        dba.LoadDatabase();
+                        UpdateUserList();
                     }
                     else
                     {
@@ -190,19 +205,37 @@ namespace ClientApplication
             }
 
         }
-        public void updateGroupList()
+        public void UpdateGroupList()
         {
-            listBox1.DataSource = dba.getGroupsNamesList();
+            listBox1.DataSource = dba.GetGroupsNamesList();
         }
-        public void updateUserList()
+        public void UpdateUserList()
         {
-            listBox2.DataSource = dba.getUsersList();
+            listBox2.DataSource = dba.GetUsersList();
         }
         // choose cert
-        private void button4_Click(object sender, EventArgs e)
+        private void ButtonChooseCertClick(object sender, EventArgs e)
         {
         }
 
+        private bool ValidateCertPools(string country, string state, string city, string organization, string unit, string email, string login)
+        {
+            if (country == "")
+                return false;
+            if (state == "")
+                return false;
+            if (city == "")
+                return false;
+            if (organization == "")
+                return false;
+            if (unit == "")
+                return false;
+            if (email == "")
+                return false;
+            if (login == "")
+                return false;
+            return true;
+        }
     }
 
 

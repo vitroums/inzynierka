@@ -115,7 +115,7 @@
             this.button2.TabIndex = 8;
             this.button2.Text = "Connect to group";
             this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
+            this.button2.Click += new System.EventHandler(this.ButtonConnectToGroupClick);
             // 
             // button3
             // 
@@ -125,7 +125,7 @@
             this.button3.TabIndex = 9;
             this.button3.Text = "New user";
             this.button3.UseVisualStyleBackColor = true;
-            this.button3.Click += new System.EventHandler(this.button3_Click);
+            this.button3.Click += new System.EventHandler(this.ButtonNewUserClick);
             // 
             // button4
             // 
@@ -135,7 +135,7 @@
             this.button4.TabIndex = 10;
             this.button4.Text = "Choose cert";
             this.button4.UseVisualStyleBackColor = true;
-            this.button4.Click += new System.EventHandler(this.button4_Click);
+            this.button4.Click += new System.EventHandler(this.ButtonChooseCertClick);
             // 
             // button1
             // 
@@ -181,7 +181,7 @@
             this.button6.TabIndex = 15;
             this.button6.Text = "New group";
             this.button6.UseVisualStyleBackColor = true;
-            this.button6.Click += new System.EventHandler(this.button6_Click);
+            this.button6.Click += new System.EventHandler(this.ButtonNewGroupClick);
             // 
             // textBox3
             // 

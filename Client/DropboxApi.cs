@@ -14,7 +14,7 @@ namespace Client
     {
         public DropboxApi(string group = "")
         {
-            connectToCloud(group);
+            ConnectToCloud(group);
         }
         DropNetClient _client;
         List<User> _userList = new List<User>();
@@ -22,7 +22,7 @@ namespace Client
         string _path = @"/";
 
         // łączenie do chmury - jeżeli jest podana grupa to ustawia to w ścieżce globalnej
-        public void connectToCloud(string group = "")
+        public void ConnectToCloud(string group = "")
         {
             try
             {
@@ -37,13 +37,13 @@ namespace Client
             }
             catch (Exception)
             {
-                Console.WriteLine("Failed to connectToCloud!");
+                Console.WriteLine("Failed to ConnectToCloud!");
                 throw;
             }
         }
 
         // ładowanie bazy danych użytkowników i zapisanie do listy _userList
-        public void loadDB()
+        public void LoadDatabase()
         {
             try
             {
@@ -71,7 +71,7 @@ namespace Client
         }
 
         // analogicnzie dla grup
-        public void loadGroups()
+        public void LoadGroups()
         {
             try
             {
@@ -98,7 +98,7 @@ namespace Client
         }
 
         // pobieranie pliku, uniwersalna metoda, można i z katalogu głownego jak i bezposrednio od uzytkownika
-        public void getFile(string name, string guid = "")
+        public void GetFile(string name, string guid = "")
         {
             try
             {
@@ -113,7 +113,7 @@ namespace Client
         }
 
         // analogicznie upload
-        public void uploadFile(string name, string guid)
+        public void UploadFile(string name, string guid)
         {
             try
             {
@@ -133,9 +133,9 @@ namespace Client
         }
 
         // getter do _groupList
-        public List<string> getGroupsNamesList()
+        public List<string> GetGroupsNamesList()
         {
-            loadGroups();
+            LoadGroups();
             List<string> names = new List<string>();
             foreach (Group g in _groupsList)
             {
@@ -155,7 +155,7 @@ namespace Client
         }
 
         // walidacja poprawnosci hasla
-        public bool validatePassword(string pass, string groupName)
+        public bool ValidatePassword(string pass, string groupName)
         {
             foreach(Group g in _groupsList)
             {
@@ -166,7 +166,7 @@ namespace Client
         }
 
         // getter do _userList
-        public List<User> getUsersList()
+        public List<User> GetUsersList()
         {
             return _userList;
         }
