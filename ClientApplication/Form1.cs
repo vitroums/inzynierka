@@ -104,6 +104,7 @@ namespace ClientApplication
                 {
                     Console.WriteLine("User {0} has been successfully added", login);
                     Connected = true;
+                    UpdateGroupList();
                 }
             }
         }
