@@ -94,6 +94,17 @@ namespace ClientApplication
                     Console.WriteLine("Unknown command!");
                 }
                 stream.ReceiveFile("keys.key");
+                stream.SendString("is-added");
+                response = stream.ReceiveString();
+                if (response != "success")
+                {
+                    Console.WriteLine("ERROR! User did not added!");
+                }
+                else
+                {
+                    Console.WriteLine("User {0} has been successfully added", login);
+                    Connected = true;
+                }
             }
         }
         // new group

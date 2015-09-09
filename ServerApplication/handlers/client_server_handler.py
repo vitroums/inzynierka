@@ -2,6 +2,7 @@
 from uuid import uuid1
 from dropbox_api import DropboxApi
 from CA.certificate_authority import CertificateAuthority
+import dropbox
 
 
 class ClientServerHandler(ServerHandlerHelper):
@@ -14,6 +15,7 @@ class ClientServerHandler(ServerHandlerHelper):
         """
         self.__ca = CertificateAuthority()
         super().__init__(request, client_address, server)
+        self.__dba = DropboxApi
         
 
     def handle(self):
@@ -24,7 +26,7 @@ class ClientServerHandler(ServerHandlerHelper):
         if command == "new-user":
             self.__newUserCommand()
         elif command == "new-group":
-            self.__newGroupCommadn()
+            self.__newGroupCommand()
         else:
             self._sendString("unknown-command")
 
@@ -38,8 +40,15 @@ class ClientServerHandler(ServerHandlerHelper):
             self._sendString("user-exists")
             return
         informations = self.__requestUserInformations()
-        certificate, keys = self.__ca.newCertificate(informations, None, name)
+        uuid = uuid1()
+        certificate, keys = self.__ca.newCertificate(informations, None, uuid)
         self.__sendNewUserFiles(certificate, keys)
+        cmd = self._receiveString()
+        if cmd == "is-added":
+            self._sendString(self.__newUserGenerate())
+        else:
+            self._sendString("failed")
+
 
     def __requestUserData(self):
         """
@@ -65,7 +74,17 @@ class ClientServerHandler(ServerHandlerHelper):
         Return:
             bool: True jeśli użytkownik istnieje, False jeżeli nie istnieje. 
         """
-        # TODO Zaimplementować sprawdzanie
+
+        self.__dba._parseDatabase()
+        nicks = [o._nick for o in self.__dba._usersList]
+        mails = [o._mail for o in self.__dba._usersList]
+        for i in nicks:
+            if i == name:
+                return True
+        for j in mails:
+            if j == name:
+                return True
+
         return False
 
     def __requestUserInformations(self):
@@ -81,7 +100,7 @@ class ClientServerHandler(ServerHandlerHelper):
         return {self._configuration.informationsKeys[i]:data[i]
                 for i in range(0, len(self._configuration.informationsKeys))}
 
-    def __generateCertificate(self, password):
+    def __generateCertificate(self, informations, password, uuid):
         """
         Generuje certyfikat i klucz dla nowego użytkownika.
 
@@ -89,7 +108,7 @@ class ClientServerHandler(ServerHandlerHelper):
             str, str: Ścieżka do pliku certyfikatu, ścieżka do pliku klucza
         """
         try:
-            return self.__ca.newCertificate(informations, password, name)
+            return self.__ca.newCertificate(informations, password, uuid)
         except ValueError:
             self._sendString("wrong-information-format")
         except IOError:
@@ -105,7 +124,16 @@ class ClientServerHandler(ServerHandlerHelper):
         self._sendFile(keys)
         
 
-    def __newGroupCommadn(self):
+    def __newGroupCommand(self):
         self._sendString("provide-group-data")
         data = self._receiveString().split(";")
         pass
+
+    def __newUserGenerate(self, name, mail, uuid):
+        try:
+            self.__dba.addNewUser(uuid, name, mail)
+            # TODO kopia publiczngo do root'a
+        except dropbox.rest.ErrorResponse:
+            print("ERROR! Couldnt add new user!")
+            return "failed"
+        return "success"

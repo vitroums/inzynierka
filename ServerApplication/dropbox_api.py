@@ -22,7 +22,6 @@ class DropboxApi:
         except dropbox.rest.ErrorResponse:
             print("ERROR! Couldnt connect to Cloud")
 
-    
     @Talker(before="Loading database...", after="Database loaded")
     def __getDataBase(self):
         try:
@@ -68,11 +67,12 @@ class DropboxApi:
     @Talker(before="Parsing database file...", after="Database parsed")
     def __parseDatabase(self):
         self.__getDataBase()
-        xmldoc = minidom.parse(self.__DATA_BASE_FILE_NAME)
+        xmldoc = MD.parse(self.__DATA_BASE_FILE_NAME)
         itemlist = xmldoc.getElementsByTagName("User")
         self.__usersList = []
         for item in itemlist:
-            self.__addUserToList(item.attributes["guid"].value, item.attributes["nick"].value, item.attributes["mail"].value)
+            self.__addUserToList(item.attributes["guid"].value, item.attributes["nick"].value,
+                                 item.attributes["mail"].value)
 
     @Talker(before="Creating database...", after="Database created")
     def __createDatabase(self):
@@ -87,7 +87,7 @@ class DropboxApi:
 
     def __addUserToList(self, guid, nick, mail):
         self.__usersList.append(User(guid, nick, mail))
-    
+
     @Talker(before="Adding new user...", after="New user added")
     def addNewUser(self, guid, nick, mail):
         self.__parseDatabase()

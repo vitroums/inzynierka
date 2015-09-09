@@ -31,6 +31,6 @@ class ClientServer(ThreadingMixIn, TCPServer):
             SSLSocket, (str, int): Zabezpieczony socket, adres, z którego przychodzi połączenie.
         """
         (socket, address) = super().get_request()
-        print("New conneftion from:", address)
+        print("New connection from:", address)
         socket.do_handshake()
         return (socket, address)
