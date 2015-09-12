@@ -37,6 +37,8 @@
         self.__caPassword = "123456"
         self.__encoding = "utf-8"
         self.__bufferSize = 1024
+        self.__dropboxApiKey = "q7RSg2cm1vAAAAAAAAAAC7sy1AfF2zsSStdhuG0KdJs3ieupiQ6A2Izek-5r8DE-"
+        self.__databaseFileName = "list.xml"
 
     @property
     def certificateFile(self):
@@ -93,3 +95,11 @@
     @property
     def bufferSize(self):
         return self.__bufferSize
+
+    @property
+    def dropboxApiKey(self):
+        return self.__dropboxApiKey
+
+    @property
+    def databaseFileName(self):
+        return self.__databaseFileName

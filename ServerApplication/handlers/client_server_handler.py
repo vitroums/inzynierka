@@ -14,9 +14,8 @@ class ClientServerHandler(ServerHandlerHelper):
         Tworzy handler dla serwera. Pobiera instancje klasy konfiguracji
         """
         self.__ca = CertificateAuthority()
+        self.__dropboxApiHandler = DropboxApi()
         super().__init__(request, client_address, server)
-        self.__dba = DropboxApi
-        
 
     def handle(self):
         """
@@ -40,15 +39,13 @@ class ClientServerHandler(ServerHandlerHelper):
             self._sendString("user-exists")
             return
         informations = self.__requestUserInformations()
-        uuid = uuid1()
+        uuid = str(uuid1())
         certificate, keys = self.__ca.newCertificate(informations, None, uuid)
-        self.__sendNewUserFiles(certificate, keys)
-        cmd = self._receiveString()
-        if cmd == "is-added":
-            self._sendString(self.__newUserGenerate())
+        if self.__addUserToCloud(name, mail, uuid, certificate):
+            self._sendString("user-added")
+            self.__sendNewUserFiles(certificate, keys, uuid)
         else:
-            self._sendString("failed")
-
+            self._sendString("problem-while-adding-user")
 
     def __requestUserData(self):
         """
@@ -74,17 +71,11 @@ class ClientServerHandler(ServerHandlerHelper):
         Return:
             bool: True jeśli użytkownik istnieje, False jeżeli nie istnieje. 
         """
-
-        self.__dba._parseDatabase()
-        nicks = [o._nick for o in self.__dba._usersList]
-        mails = [o._mail for o in self.__dba._usersList]
-        for i in nicks:
-            if i == name:
-                return True
-        for j in mails:
-            if j == name:
-                return True
-
+        with DropboxApi() as cloud:
+            usersList = cloud.getUsersList()
+            for user in usersList:
+                if user.mail == mail or user.nick == name:
+                    return True
         return False
 
     def __requestUserInformations(self):
@@ -114,26 +105,46 @@ class ClientServerHandler(ServerHandlerHelper):
         except IOError:
             self._sendString("server-error")
 
-    def __sendNewUserFiles(self, certificate, keys):
+    def __addUserToCloud(self, name, mail, uuid, certificate):
+        """
+        Dodaje użytkownika do bazy danych w chmurze i zapisuje tam jego certyfikat.
+
+        Args:
+            name (str): Nazwa użytkownika.
+            mail (str): Mail użytkownika.
+            uuid (str): ID użytkownika.
+            certificate (str): Ścieżka do pliku certyfikatu
+
+        Return:
+            bool: Prawda jeśli udały się wszystki operacje, fałsz jeśli nie.
+        """
+        try:
+            with DropboxApi() as cloud:
+                cloud.addNewUser(uuid, name, mail)
+                cloud.sendFile(certificate, ".".join([uuid, "crt"]))
+        except dropbox.rest.ErrorResponse:
+            return False
+        else:
+            return True
+
+    def __sendNewUserFiles(self, certificate, keys, uuid):
         """
         Wysłanie plików certyfikatu i klucza do użytkownika.
+
+        Args:
+            certificate (str): Ścieżka do pliku certyfikatu.
+            keys (str): Ścieżka do pliku kluczy.
+            uuid (str): ID użytkownika.
         """
         self._sendString("certificate-file")
         self._sendFile(certificate)
         self._sendString("keys-file")
         self._sendFile(keys)
+        self._sendString("user-id")
+        self._sendString(uuid)
         
 
     def __newGroupCommand(self):
         self._sendString("provide-group-data")
         data = self._receiveString().split(";")
         pass
-
-    def __newUserGenerate(self, name, mail, uuid):
-        try:
-            self.__dba.addNewUser(uuid, name, mail)
-            # TODO kopia publiczngo do root'a
-        except dropbox.rest.ErrorResponse:
-            print("ERROR! Couldnt add new user!")
-            return "failed"
-        return "success"

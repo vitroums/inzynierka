@@ -69,43 +69,60 @@ namespace ClientApplication
                 if (response != "provide-user-name")
                 {
                     Console.WriteLine("Unknown command!");
+                    return;
                 }
                 stream.SendString(login);
                 response = stream.ReceiveString();
                 if (response != "provide-user-mail")
                 {
                     Console.WriteLine("Unknown command!");
+                    return;
                 }
                 stream.SendString(email);
                 response = stream.ReceiveString();
-                if (response != "provide-user-data")
+                if (response == "user-exists")
+                {
+                    Console.WriteLine("User already exists");
+                    return;
+                }
+                else if (response != "provide-user-data")
                 {
                     Console.WriteLine("Unknown command!");
+                    return;
                 }
                 stream.SendString(certPools);
+                response = stream.ReceiveString();
+                if (response == "problem-adding-user")
+                {
+                    Console.WriteLine("Problem with adding user");
+                    return;
+                }
+                else if (response != "user-added")
+                {
+                    Console.WriteLine("Unknown command!");
+                    return;
+                }
                 response = stream.ReceiveString();
                 if (response != "certificate-file")
                 {
                     Console.WriteLine("Unknown command!");
+                    return;
                 }
                 stream.ReceiveFile("certyfikat.cer");
+                response = stream.ReceiveString();
                 if (response != "keys-file")
                 {
                     Console.WriteLine("Unknown command!");
+                    return;
                 }
                 stream.ReceiveFile("keys.key");
-                stream.SendString("is-added");
                 response = stream.ReceiveString();
-                if (response != "success")
+                if (response != "user-id")
                 {
-                    Console.WriteLine("ERROR! User did not added!");
+                    Console.WriteLine("Unknown command!");
+                    return;
                 }
-                else
-                {
-                    Console.WriteLine("User {0} has been successfully added", login);
-                    Connected = true;
-                    UpdateGroupList();
-                }
+                GUID = stream.ReceiveString();
             }
         }
         // new group
