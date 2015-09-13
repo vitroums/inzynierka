@@ -60,124 +60,23 @@ namespace ClientApplication
                 return;
             }
             var certPools = country + ";" + state + ";" + city + ";" + organization + ";" + unit + ";" + login;
-            using (SslClient stream = new SslClient("127.0.0.1", 12345))
-            {
-                stream.SendString("new-user");
-                // client -> server "new-user"
-                string response = stream.ReceiveString();
-                // client <- server "provide-user-name"
-                if (response != "provide-user-name")
-                {
-                    Console.WriteLine("Unknown command!");
-                    return;
-                }
-                stream.SendString(login);
-                response = stream.ReceiveString();
-                if (response != "provide-user-mail")
-                {
-                    Console.WriteLine("Unknown command!");
-                    return;
-                }
-                stream.SendString(email);
-                response = stream.ReceiveString();
-                if (response == "user-exists")
-                {
-                    Console.WriteLine("User already exists");
-                    return;
-                }
-                else if (response != "provide-user-data")
-                {
-                    Console.WriteLine("Unknown command!");
-                    return;
-                }
-                stream.SendString(certPools);
-                response = stream.ReceiveString();
-                if (response == "problem-adding-user")
-                {
-                    Console.WriteLine("Problem with adding user");
-                    return;
-                }
-                else if (response != "user-added")
-                {
-                    Console.WriteLine("Unknown command!");
-                    return;
-                }
-                response = stream.ReceiveString();
-                if (response != "certificate-file")
-                {
-                    Console.WriteLine("Unknown command!");
-                    return;
-                }
-                stream.ReceiveFile("certyfikat.cer");
-                response = stream.ReceiveString();
-                if (response != "keys-file")
-                {
-                    Console.WriteLine("Unknown command!");
-                    return;
-                }
-                stream.ReceiveFile("keys.key");
-                response = stream.ReceiveString();
-                if (response != "user-id")
-                {
-                    Console.WriteLine("Unknown command!");
-                    return;
-                }
-                GUID = stream.ReceiveString();
-            }
+            GUID = ServerTransaction.CreateNewUser(login, email, certPools, "1234", "123456");
+            MessageBox.Show("Welcome, your ID: " + GUID, "New user");
         }
         // new group
         private void ButtonNewGroupClick(object sender, EventArgs e)
         {
-            using (SslClient stream = new SslClient("127.0.0.1", 9999))
+            if (GUID != "" && login != "" && email != "")
             {
-                var nazwaGrupy = Interaction.InputBox("Podaj nazwę grupy", "Nowa grupa", "mojagrupa");
-                if (nazwaGrupy != "")
+                var name = Interaction.InputBox("Podaj nazwę grupy", "Nazwa", "");
+                var password = Interaction.InputBox("Podaj hasło grupy", "Hasło", "");
+                if (ServerTransaction.CreateNewGroup(name, password, GUID, login, email))
                 {
-                    stream.SendString("new-group");
-                    // client -> server "new-user"
-                    string response = stream.ReceiveString();
-                    // client <- server "new-user-type"
-
-                    if (response == "provide-data")
-                    {
-                        // country;state;city;organization;unit;name;email;login
-                        var x = Interaction.InputBox("Podaj nazwę grupy", "Nowa grupa", "mojagrupa");
-                        String password = Guid.NewGuid().ToString();
-                        const string data = "PL;pomerania;Gdansk;PG;ETI;;mail@example.com;n5cccdd8546ba";
-                        string nick = "nanaba";
-                        stream.SendString(data);
-                        // client -> server data
-                        response = stream.ReceiveString();
-                        // client <- server guid
-                        if (response != "user-exists")
-                        {
-                            string guid = response;
-                            stream.ReceiveFile("cert2.pem");
-                            // client <- server certificate
-                            stream.ReceiveFile("key2.pem");
-                            // client <- server key
-                            stream.SendString("done");
-                            // client -> server "done"
-
-                            Console.WriteLine("Registered new user:");
-                            Console.WriteLine("GUID: " + guid);
-                            Console.WriteLine("Nick: " + nick);
-                            GUID = guid;
-                            textBox2.Text = Path.GetFullPath("cert2.pem");
-                            Connected = true;
-                            UpdateGroupList();
-                        }
-                        // client <- server "user-exists"
-                        else
-                        {
-                            Console.WriteLine("User already exists!");
-                        }
-                    }
-                    // client <- server "unknown-command"
-                    else
-                    {
-                        Console.WriteLine("Unknown command!");
-                    }
+                    MessageBox.Show("Group \"" + name + "\" created", "New group");
+                }
+                else
+                {
+                    MessageBox.Show("Couldn't create group", "New group");
                 }
             }
         }

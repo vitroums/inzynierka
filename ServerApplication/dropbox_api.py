@@ -41,21 +41,19 @@ class DropboxApi(object):
         for _file in self.__usedFiles:
             os.remove(_file)
 
-    def createUserDirectory(self, guid):
-        """
-        Tworzy katalog użytkownika (o nazwie jego ID).
-
-        Args:
-            guid (str): ID użytkownika.
-        """
-        self.__createDir(guid)
-
     def getUsersList(self):
         """
         Pobiera bazę użytkowników z chmury i zwraca ją w formie listy.
         """
-        self.__getDatabase()
+        self.__getUserDatabase()
         return self.__usersList
+
+    def getGroupList(self):
+        """
+        Pobiera bazę grup z chmury i zwraca ją w formie listy.
+        """
+        self.__getGroupDatabase()
+        return self.__groupList
 
     def sendFile(self, name, newName):
         """
@@ -115,19 +113,19 @@ class DropboxApi(object):
         except dropbox.rest.ErrorResponse:
             print("ERROR: Couldn't create a directory")
 
-    def __getDatabase(self):
+    def __getUserDatabase(self):
         """
         Pobiera z chmury listę użytkowników i zapisuje ją do listy.
         """
-        self.__getFile(self.__configuration.databaseFileName)
-        xmldoc = MD.parse(self.__configuration.databaseFileName)
+        self.__getFile(self.__configuration.userDatabaseFileName)
+        xmldoc = MD.parse(self.__configuration.userDatabaseFileName)
         itemList = xmldoc.getElementsByTagName("User")
         self.__usersList = []
         for item in itemList:
             self.__addUserToList(item.attributes["guid"].value, item.attributes["nick"].value,
                                  item.attributes["mail"].value)
 
-    def __createDatabase(self):
+    def __createUserDatabase(self):
         """
         Zapisuje listę użytkowników do pliku xml.
         """
@@ -135,10 +133,35 @@ class DropboxApi(object):
         for item in self.__usersList:
             ET.SubElement(root, "User", guid=item.guid, nick=item.nick, mail=item.mail)
         tree = ET.ElementTree(root)
-        tree.write(self.__configuration.databaseFileName)
-        xmlText = MD.parse(self.__configuration.databaseFileName).toprettyxml()
-        with open(self.__configuration.databaseFileName, "w") as dataBaseFile:
+        tree.write(self.__configuration.userDatabaseFileName)
+        xmlText = MD.parse(self.__configuration.userDatabaseFileName).toprettyxml()
+        with open(self.__configuration.userDatabaseFileName, "w") as dataBaseFile:
             dataBaseFile.write(xmlText)
+
+    def __getGroupDatabase(self):
+        """
+        Pobiera z chmury listę grup i zapisuje ją do listy
+        """
+        self.__getFile(self.__configuration.groupDatabaseFileName)
+        xmldoc = MD.parse(self.__configuration.groupDatabaseFileName)
+        itemList = xmldoc.getElementsByTagName("Group")
+        self.__groupList = []
+        for item in itemList:
+            self.__addGroupToList(item.attributes["name"].value, item.attributes["password"].value)
+
+    def __createGroupDatabase(self):
+        """
+        Zapisuje listę drup do pliku xml.
+        """
+        root = ET.Element("Groups")
+        for group in self.__groupList:
+            ET.SubElement(root, "Group", name=group.name, password=group.password)
+        tree = ET.ElementTree(root)
+        tree.write(self.__configuration.groupDatabaseFileName)
+        xmlText = MD.parse(self.__configuration.groupDatabaseFileName).toprettyxml()
+        with open(self.__configuration.groupDatabaseFileName, "w") as dataBaseFile:
+            dataBaseFile.write(xmlText)
+            
 
     def __addUserToList(self, guid, name, mail):
         """
@@ -151,6 +174,16 @@ class DropboxApi(object):
         """
         self.__usersList.append(User(guid, name, mail))
 
+    def __addGroupToList(self, name, password):
+        """
+        Dodaje grupę do listy.
+
+        Args:
+            name (str): Nazwa grupy.
+            password (str): Hash hasła.
+        """
+        self.__groupList.append(Group(name, password))
+
     def addNewUser(self, guid, name, mail):
         """
         Tworzy nowego użytkownika i zapisuje informacje do bazy danych.
@@ -160,10 +193,38 @@ class DropboxApi(object):
             name (str): Nazwa użytkownika.
             mail (str): E-mail użytkownika.
         """
-        self.__getDatabase()
+        self.__getUserDatabase()
         self.__addUserToList(guid, name, mail)
-        self.__createDatabase()
-        self.__uploadFile(self.__configuration.databaseFileName)
+        self.__createUserDatabase()
+        self.__uploadFile(self.__configuration.userDatabaseFileName)
+
+    def addNewGroup(self, name, password):
+        """
+        Tworzy nową grupę i zapisuje informacje do bazy danych.
+
+        Args:
+            name (str): Nazwa grupy.
+            password (str): Hash hasła.
+        """
+        self.__getGroupDatabase()
+        self.__addGroupToList(name, password)
+        self.__createGroupDatabase()
+        self.__uploadFile(self.__configuration.groupDatabaseFileName)
+        self.__createDir(name)
+
+    def createNewGroupUserList(self, guid, name, mail):
+        """
+        W nowoutworzonej grupie, tworzy listę użytkowników, oraz katalog pierwszego użytkownika.
+
+        Args:
+            guid (str): ID pierwszego użytkownika.
+            name (str): Nazwa pierwszego użytkownika.
+            mail (str): Adres e-mail pierwszego użytkownika.
+        """
+        self.__usersList = [User(guid, name, mail)]
+        self.__createUserDatabase()
+        self.__uploadFile(self.__configuration.userDatabaseFileName)
+        self.__createDir(guid)
 
 class User:
     def __init__(self, guid, nick, mail):
@@ -182,3 +243,16 @@ class User:
     @property
     def mail(self):
         return self.__mail
+
+class Group(object):
+    def __init__(self, name, password):
+        self.__name = name
+        self.__password = password
+
+    @property
+    def name(self):
+        return self.__name
+
+    @property
+    def password(self):
+        return self.__password

@@ -38,7 +38,9 @@
         self.__encoding = "utf-8"
         self.__bufferSize = 1024
         self.__dropboxApiKey = "q7RSg2cm1vAAAAAAAAAAC7sy1AfF2zsSStdhuG0KdJs3ieupiQ6A2Izek-5r8DE-"
-        self.__databaseFileName = "list.xml"
+        self.__userDatabaseFileName = "list.xml"
+        self.__groupDatabaseFileName = "group.xml"
+        self.__passwordDir = "passwds"
 
     @property
     def certificateFile(self):
@@ -101,5 +103,13 @@
         return self.__dropboxApiKey
 
     @property
-    def databaseFileName(self):
-        return self.__databaseFileName
+    def userDatabaseFileName(self):
+        return self.__userDatabaseFileName
+
+    @property
+    def groupDatabaseFileName(self):
+        return self.__groupDatabaseFileName
+
+    @property
+    def passwordsDir(self):
+        return self.__passwordDir

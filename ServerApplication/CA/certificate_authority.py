@@ -94,9 +94,8 @@ class CertificateAuthority(object):
         Return:
             OpenSSL.crypto.PKey: Obiekt klucza.
         """
-        # TODO Dodać obsługę hasła
         try:
-            return crypto.load_privatekey(crypto.FILETYPE_PEM, self.__loadDataFromFile(path))
+            return crypto.load_privatekey(crypto.FILETYPE_PEM, self.__loadDataFromFile(path), password.encode(self.__configuration.encoding))
         except FileNotFoundError:
             print("Key file doesn't exist")
         except IOError:
@@ -231,8 +230,7 @@ class CertificateAuthority(object):
         Return:
             bool: True jeśli zapis się powiódł
         """
-        # TODO Dodać obsługę hasła
-        return self.__saveFile(path, crypto.dump_privatekey(crypto.FILETYPE_PEM, key))
+        return self.__saveFile(path, crypto.dump_privatekey(crypto.FILETYPE_PEM, key, None, password.encode(self.__configuration.encoding)))
 
     def newCertificate(self, informations, password, name):
         """
@@ -261,3 +259,65 @@ class CertificateAuthority(object):
         self.__saveCertificate(certificatePath, certificate)
         self.__saveKeys(keysPath, keys, password)
         return certificatePath, keysPath
+    
+    def encryptStringWithPublicKey(self, message, certificateFile):
+        """
+        Szyfruje podaną wiadomość kluczem publicznym z certyfikatu.
+
+        Args:
+            message (str): Wiadomość do zaszyfrowania.
+            certificateFile (str): Ścieżka do pliku certyfikatu.
+
+        Return:
+            str: Zaszyfrowana kluczem publicznym wiadomość.
+        """
+        certificate = self.__loadCertificateFromFile(certificateFile)
+        publicKey = certificate.get_pubkey()
+        # TODO Szyfrowanie wiadomości
+        return message
+
+    def decryptStringWithPublicKey(self, chiper, certificateFile):
+        """
+        Odszyfrowuje podaną wiadomość kluczem publicznym z certyfikatu.
+
+        Args:
+            chiper (str): Zaszyfrowana wiadomość.
+            certificateFile (str): Ścieżka do pliku certyfikatu.
+        
+        Return:
+            str: Odszyfrowana wiadomość.
+        """
+        certificate = self.__loadCertificateFromFile(certificateFile)
+        publicKey = certificate.get_pubkey()
+        # TODO Odszyfrowywanie wiadomości
+        return chiper
+    
+    def encryptStringWithPrivateKey(self, message, keysFile):
+        """
+        Szyfruje podaną wiadomość kluczem prywatnym.
+
+        Args:
+            message (str): Wiadomość do zaszyfrowania.
+            keysFile (str): Ścieżka do pliku kluczy.
+
+        Return:
+            str: Zaszyfrowana wiadomość.
+        """
+        keys = self.__loadPrivateKeyFromFile(keysFile)
+        # TODO Szyfrowanie wiadomości
+        return message
+
+    def decryptStringWithPrivateKey(self, chiper, keysFile):
+        """
+        Odszyfrowuje podaną wiadomość kluczem prywatnym.
+
+        Args:
+            chiper (str): Zaszyfrowana wiadomość.
+            keysFile (str): Ścieżka do pliku kluczy.
+
+        Return:
+            str: Odszyfrowana wiadomość.
+        """
+        keys = self.__loadPrivateKeyFromFile(keysFile)
+        # TODO Szyfrowanie wiadomości
+        return chiper
