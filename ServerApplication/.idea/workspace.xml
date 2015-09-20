@@ -56,8 +56,8 @@
       <file leaf-file-name="certificate_authority.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/CA/certificate_authority.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.510989">
-              <caret line="279" column="0" selection-start-line="279" selection-start-column="0" selection-end-line="279" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.4532967">
+              <caret line="181" column="8" selection-start-line="181" selection-start-column="8" selection-end-line="181" selection-end-column="8" />
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
@@ -87,9 +87,9 @@
         <option value="$PROJECT_DIR$/dropbox_api.py" />
         <option value="$PROJECT_DIR$/utils/configuration.py" />
         <option value="$PROJECT_DIR$/handlers/client_server_handler.py" />
-        <option value="$PROJECT_DIR$/CA/certificate_authority.py" />
         <option value="C:/Python34/Lib/site-packages/crypto/Random/__init__.py" />
         <option value="C:/Python34/Lib/site-packages/crypto/Random/OSRNG/__init__.py" />
+        <option value="$PROJECT_DIR$/CA/certificate_authority.py" />
       </list>
     </option>
   </component>
@@ -563,8 +563,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/CA/certificate_authority.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.510989">
-          <caret line="279" column="0" selection-start-line="279" selection-start-column="0" selection-end-line="279" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.4532967">
+          <caret line="181" column="8" selection-start-line="181" selection-start-column="8" selection-end-line="181" selection-end-column="8" />
           <folding>
             <element signature="e#0#31#0" expanded="true" />
           </folding>

@@ -179,11 +179,9 @@ class CertificateAuthority(object):
         Return:
             OpenSSL.crypto.PKey: Obiekt wygenerowanej pary kluczy.
         """
-        #keys = crypto.PKey()
-        #keys.generate_key(crypto.TYPE_RSA, bits)
-        random_generator = Random.new().read
-        key = RSA.generate(bits, random_generator) #generate pub and priv key
-        return key
+        keys = crypto.PKey()
+        keys.generate_key(crypto.TYPE_RSA, bits)
+        return keys
 
     def __signCertificate(self, certificate):
         """
