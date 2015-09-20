@@ -1,4 +1,8 @@
-﻿namespace Client
+﻿using System;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+namespace Client
 {
     public class ServerTransaction
     {
@@ -75,7 +79,7 @@
             return id;
         }
 
-        private static bool AuthenticateMyself(SslClient stream, string id, string login, string mail)
+        public static bool AuthenticateMyself(SslClient stream, string id, string login, string mail)
         {
             string response;
             bool result = false;
@@ -109,8 +113,7 @@
                 CommandError();
             }
             string chiper = stream.ReceiveString();
-            // TODO Odszyfrowywanie wiadomości
-            string message = chiper;
+            string message = DecryptEncryptedData(chiper, "certificate.pem");
             stream.SendString(message);
             response = stream.ReceiveString();
             if (response == "permission-granted")
@@ -177,5 +180,70 @@
         {
             // TODO Dodać argument (nierozpoznane polecenie) i obsługę rzucania wyjątku
         }
+
+        public static string DecryptEncryptedData(string Base64EncryptedData, string PathToPrivateKeyFile) 
+        {
+        X509Certificate2 myCertificate;
+        try{
+            myCertificate = new X509Certificate2(PathToPrivateKeyFile);
+        } catch{
+            throw new CryptographicException("Unable to open key file.");
+        }
+
+        RSACryptoServiceProvider rsaObj;
+        if(myCertificate.HasPrivateKey) {
+             rsaObj = (RSACryptoServiceProvider)myCertificate.PrivateKey;
+        } else
+            throw new CryptographicException("Private key not contained within certificate.");
+
+        if(rsaObj == null)
+            return string.Empty;
+
+        byte[] decryptedBytes;
+        try{
+            decryptedBytes = rsaObj.Decrypt(Convert.FromBase64String(Base64EncryptedData), false);
+            
+        } catch {
+            throw new CryptographicException("Unable to decrypt data.");
+        }
+
+    //    Check to make sure we decrpyted the string
+        if(decryptedBytes.Length == 0)
+            return string.Empty;
+        else
+            return System.Text.Encoding.UTF8.GetString(decryptedBytes);
+        }
+
+        public static string EncryptDecryptedData(string DecryptedData, string PathToPublicKeyFile)
+        {
+            X509Certificate2 myCertificate;
+            try
+            {
+                myCertificate = new X509Certificate2(PathToPublicKeyFile);
+            }
+            catch
+            {
+                throw new CryptographicException("Unable to open key file.");
+            }
+             RSACryptoServiceProvider myRSAProvide = new RSACryptoServiceProvider();
+             byte[] bteCrypt = null;
+             byte[] bteResult = null;
+            try
+            {
+               bteCrypt = Encoding.UTF8.GetBytes(DecryptedData);
+               bteResult = myRSAProvide.Encrypt(bteCrypt, false);
+             }  
+            catch
+            {
+                throw new CryptographicException("Unable to encypt data.");
+            }
+
+
+            //    Check to make sure we decrpyted the string
+            if (bteResult.Length == 0)
+                return string.Empty;
+            else
+                return System.Text.Encoding.UTF8.GetString(bteResult);
+        } 
     }
 }

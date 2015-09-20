@@ -40,7 +40,8 @@
         self.__dropboxApiKey = "q7RSg2cm1vAAAAAAAAAAC7sy1AfF2zsSStdhuG0KdJs3ieupiQ6A2Izek-5r8DE-"
         self.__userDatabaseFileName = "list.xml"
         self.__groupDatabaseFileName = "group.xml"
-        self.__passwordDir = "passwds"
+        #self.__passwordDir = "passwds"
+        self.__passwordDir = "certs"
 
     @property
     def certificateFile(self):

@@ -1,7 +1,8 @@
 ﻿from OpenSSL import crypto, SSL
 import os
 from utils.configuration import Configuration
-
+from crypto import Random
+from crypto.PublicKey import RSA
 
 class CertificateAuthority(object):
     """
@@ -178,9 +179,11 @@ class CertificateAuthority(object):
         Return:
             OpenSSL.crypto.PKey: Obiekt wygenerowanej pary kluczy.
         """
-        keys = crypto.PKey()
-        keys.generate_key(crypto.TYPE_RSA, bits)
-        return keys
+        #keys = crypto.PKey()
+        #keys.generate_key(crypto.TYPE_RSA, bits)
+        random_generator = Random.new().read
+        key = RSA.generate(bits, random_generator) #generate pub and priv key
+        return key
 
     def __signCertificate(self, certificate):
         """
@@ -274,6 +277,8 @@ class CertificateAuthority(object):
         certificate = self.__loadCertificateFromFile(certificateFile)
         publicKey = certificate.get_pubkey()
         # TODO Szyfrowanie wiadomości
+
+
         return message
 
     def decryptStringWithPublicKey(self, chiper, certificateFile):
@@ -289,6 +294,7 @@ class CertificateAuthority(object):
         """
         certificate = self.__loadCertificateFromFile(certificateFile)
         publicKey = certificate.get_pubkey()
+        crypto.sign("key.pem", "omg", "gg")
         # TODO Odszyfrowywanie wiadomości
         return chiper
     

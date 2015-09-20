@@ -181,7 +181,7 @@ class ClientServerHandler(ServerHandlerHelper):
             self._sendString("user-doesnt-exist")
         orginalMessage = "message"
         certificateFile = "/".join([self._configuration.certificatesDir, ".".join([id, "crt"])])
-        chiper = self.__ca.decryptStringWithPublicKey(orginalMessage, certificateFile)
+        chiper = self.__ca.encryptStringWithPublicKey(orginalMessage, certificateFile)
         self._sendString("decrypt-message")
         self._sendString(chiper)
         decryptedMessage = self._receiveString()

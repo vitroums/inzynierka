@@ -62,6 +62,8 @@ namespace ClientApplication
             var certPools = country + ";" + state + ";" + city + ";" + organization + ";" + unit + ";" + login;
             GUID = ServerTransaction.CreateNewUser(login, email, certPools, "1234", "123456");
             MessageBox.Show("Welcome, your ID: " + GUID, "New user");
+            Console.WriteLine("Connected as: \n {0}", GUID);
+            Connected = true;
         }
         // new group
         private void ButtonNewGroupClick(object sender, EventArgs e)
@@ -127,6 +129,17 @@ namespace ClientApplication
         // choose cert
         private void ButtonChooseCertClick(object sender, EventArgs e)
         {
+            SslClient stream = new SslClient("127.0.0.1", 12345);
+                
+                if (ServerTransaction.AuthenticateMyself(stream, "9033a13a-5eb1-11e5-b3b0-f6d8a6108e1a", "mietek", "mietek@example.com"))
+                {
+                    Console.WriteLine("Authenticated");
+                }
+                else
+                {
+                    Console.WriteLine("Failed");
+                }
+            
         }
 
         private bool ValidateCertPools(string country, string state, string city, string organization, string unit, string email, string login)
