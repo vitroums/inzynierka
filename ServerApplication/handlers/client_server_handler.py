@@ -5,6 +5,9 @@ from CA.certificate_authority import CertificateAuthority
 import dropbox
 import os
 from hashlib import md5
+from handlers.errors.response_error import ResponseError
+from handlers.errors.command_error import CommandError
+from handlers.errors.authentication_error import AuthenticationError
 
 
 class ClientServerHandler(ServerHandlerHelper):
@@ -23,19 +26,26 @@ class ClientServerHandler(ServerHandlerHelper):
         """
         Obsługuje połączenie przychodzące
         """
-        command = self._receiveString()
-        if command == "new-user":
-            self.__newUserCommand()
-        elif command == "login":
-            result, id, name, mail = self.__authenticateUser()
-            if result:
-                command = self._receiveString()
-                if command == "new-group":
-                    self.__newGroupCommand(id, name, mail)
-                else:
-                    self._sendString("unknown-command")        
-        else:
-            self._sendString("unknown-command")
+        try:
+            command = self._receiveString()
+            if command == "new-user":
+                self.__newUserCommand()
+            elif command == "login":
+                result, id, name, mail = self.__authenticateUser()
+                if result:
+                    command = self._receiveString()
+                    if command == "new-group":
+                        self.__newGroupCommand(id, name, mail)
+                    else:
+                        self._sendString("unknown-command")        
+            else:
+                self.__commandError(command)
+        except ResponseError as error:
+            print(error)
+        except CommandError as error:
+            print(error)
+        except AuthenticationError as error:
+            print(error)
 
     def __newUserCommand(self):
         """
@@ -51,6 +61,9 @@ class ClientServerHandler(ServerHandlerHelper):
         if self.__addUserToCloud(name, mail, uuid, certificate):
             self._sendString("user-added")
             self.__sendNewUserFiles(certificate, keys, uuid)
+            response = self._receiveString()
+            if response != "everything-ok":
+                self.__responseError("everything-ok", response)
             with open("/".join([self._configuration.passwordsDir, uuid]), "w") as passwordFile:
                 passwordFile.write(md5(rescuePassword.encode(self._configuration.encoding)).hexdigest())
         else:
@@ -66,8 +79,14 @@ class ClientServerHandler(ServerHandlerHelper):
             str, str: Nazwa użytkownika i jego adres e-mail.
         """
         self._sendString("provide-user-name")
+        response = self._receiveString()
+        if response != "user-name":
+            self.__responseError("user-name", response)
         name = self._receiveString()
         self._sendString("provide-user-mail")
+        response = self._receiveString()
+        if response != "user-mail":
+            self.__responseError("user-name", response)
         mail = self._receiveString()
         return name, mail
 
@@ -103,11 +122,23 @@ class ClientServerHandler(ServerHandlerHelper):
             dict: Słownik z danymi użytkownika.
         """
         self._sendString("provide-user-data")
+        response = self._receiveString()
+        if response != "user-data":
+            self.__responseError("user-data", response)
         data = self._receiveString().split(";")
+        
         self._sendString("provide-keys-password")
+        response = self._receiveString()
+        if response != "keys-password":
+            self.__responseError("keys-password", response)
         keysPassword = self._receiveString()
+        
         self._sendString("provide-rescue-password")
+        response = self._receiveString()
+        if response != "rescue-password":
+            self.__responseError("rescue-password", response)
         rescuePassword = self._receiveString()
+
         return {self._configuration.informationsKeys[i]:data[i]
                 for i in range(0, len(self._configuration.informationsKeys))}, keysPassword, rescuePassword
 
@@ -172,11 +203,23 @@ class ClientServerHandler(ServerHandlerHelper):
                 Przy udanym sprawdzeniu toższsamości użytkownika, zwraca jego dane.
         """
         self._sendString("provide-user-id")
+        response = self._receiveString()
+        if response != "user-id":
+            self.__responseError("user-id", response)
         id = self._receiveString()
-        self._sendString("provide-user-id")
+
+        self._sendString("provide-user-name")
+        response = self._receiveString()
+        if response != "user-name":
+            self.__responseError("user-name", response)
         name = self._receiveString()
-        self._sendString("provide-user-id")
+
+        self._sendString("provide-user-mail")
+        response = self._receiveString()
+        if response != "user-mail":
+            self.__responseError("user-mail", response)
         mail = self._receiveString()
+
         if not self.__doesUserExist(name, mail, id):
             self._sendString("user-doesnt-exist")
         orginalMessage = "message"
@@ -184,13 +227,17 @@ class ClientServerHandler(ServerHandlerHelper):
         chiper = self.__ca.encryptStringWithPublicKey(orginalMessage, certificateFile)
         self._sendString("decrypt-message")
         self._sendString(chiper)
+
+        response = self._receiveString()
+        if response != "decrypted-message":
+            self.__responseError("decrypted-message", response)
         decryptedMessage = self._receiveString()
         if decryptedMessage == orginalMessage:
             self._sendString("permission-granted")
-            return True, id, name, mail
         else:
             self._sendString("permission-denied")
-            return False
+            self.__authenticationError("Decryption failed")            
+        return True, id, name, mail
 
     def __newGroupCommand(self, id, login, mail):
         """
@@ -213,8 +260,15 @@ class ClientServerHandler(ServerHandlerHelper):
             str, str: Nazwa grupy i jej hasło.
         """
         self._sendString("provide-group-name")
+        response = self._receiveString()
+        if response != "group-name":
+            self.__responseError("group-name", response)
         name = self._receiveString()
+
         self._sendString("provide-group-password")
+        response = self._receiveString()
+        if response != "group-password":
+            self.__responseError("group-password", response)
         password = md5(self._receiveString().encode(self._configuration.encoding)).hexdigest()
         return name, password
 
@@ -257,3 +311,14 @@ class ClientServerHandler(ServerHandlerHelper):
             return False
         else:
             return True
+
+    def __responseError(self, expected, response):
+        message = " ".join(["Excepted message:", expected, "Received message:", response])
+        raise ResponseError(message)
+
+    def __commandError(self, command):
+        message = " ".join([command, "is not valid command"])
+        raise CommandError(message)
+
+    def __authenticationError(self, message):
+        raise AuthenticationError(message)

@@ -46,9 +46,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Errors\AuthenticationError.cs" />
     <Compile Include="DropboxApi.cs" />
+    <Compile Include="Errors\ServerResponseError.cs" />
     <Compile Include="Rest.cs" />
     <Compile Include="ServerTransaction.cs" />
+    <Compile Include="Errors\UnknownCommandError.cs" />
     <Compile Include="SslClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

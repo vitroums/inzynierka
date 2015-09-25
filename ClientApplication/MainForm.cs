@@ -8,13 +8,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Client;
+using Client.Errors;
 using System.IO;
 using Microsoft.VisualBasic;
 
 
 namespace ClientApplication
 {
-    public partial class Form1 : Form
+    public partial class MainForm : Form
     {
 
         DropboxApi dba = new DropboxApi();
@@ -26,7 +27,7 @@ namespace ClientApplication
         bool ConnectedToGroup = false;
         
         
-        public Form1()
+        public MainForm()
         {
             InitializeComponent();
             // output do textBox'a i konsoli
@@ -60,25 +61,45 @@ namespace ClientApplication
                 return;
             }
             var certPools = country + ";" + state + ";" + city + ";" + organization + ";" + unit + ";" + login;
-            GUID = ServerTransaction.CreateNewUser(login, email, certPools, "1234", "123456");
-            MessageBox.Show("Welcome, your ID: " + GUID, "New user");
-            Console.WriteLine("Connected as: \n {0}", GUID);
-            Connected = true;
+            try
+            {
+                GUID = ServerTransaction.CreateNewUser(login, email, certPools, "1234", "123456");
+                MessageBox.Show("Welcome, your ID: " + GUID, "New user");
+                Console.WriteLine("Connected as: \n {0}", GUID);
+                Connected = true;
+            }
+            catch (UnknownCommadError error)
+            {
+                MessageBox.Show(error.Message);
+            }
+            catch (ServerResponseError error)
+            {
+                MessageBox.Show(error.Message);
+            }
         }
         // new group
         private void ButtonNewGroupClick(object sender, EventArgs e)
         {
             if (GUID != "" && login != "" && email != "")
             {
-                var name = Interaction.InputBox("Podaj nazwę grupy", "Nazwa", "");
-                var password = Interaction.InputBox("Podaj hasło grupy", "Hasło", "");
-                if (ServerTransaction.CreateNewGroup(name, password, GUID, login, email))
+                try
                 {
+                    var name = Interaction.InputBox("Podaj nazwę grupy", "Nazwa", "");
+                    var password = Interaction.InputBox("Podaj hasło grupy", "Hasło", "");
+                    ServerTransaction.CreateNewGroup(name, password, GUID, login, email);
                     MessageBox.Show("Group \"" + name + "\" created", "New group");
                 }
-                else
+                catch (UnknownCommadError error)
                 {
-                    MessageBox.Show("Couldn't create group", "New group");
+                    MessageBox.Show(error.Message);
+                }
+                catch (ServerResponseError error)
+                {
+                    MessageBox.Show(error.Message);
+                }
+                catch (AuthenticationError error)
+                {
+                    MessageBox.Show(error.Message);
                 }
             }
         }
@@ -131,7 +152,7 @@ namespace ClientApplication
         {
             SslClient stream = new SslClient("127.0.0.1", 12345);
                 
-                if (ServerTransaction.AuthenticateMyself(stream, "9033a13a-5eb1-11e5-b3b0-f6d8a6108e1a", "mietek", "mietek@example.com"))
+                if (ServerTransaction.Authenticate(stream, "9033a13a-5eb1-11e5-b3b0-f6d8a6108e1a", "mietek", "mietek@example.com"))
                 {
                     Console.WriteLine("Authenticated");
                 }

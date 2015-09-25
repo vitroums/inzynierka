@@ -1,8 +1,6 @@
 ﻿from OpenSSL import crypto, SSL
 import os
 from utils.configuration import Configuration
-from crypto import Random
-from crypto.PublicKey import RSA
 
 class CertificateAuthority(object):
     """

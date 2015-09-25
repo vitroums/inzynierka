@@ -26,7 +26,19 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="CA\certificate_authority.py" />
+    <Compile Include="handlers\errors\authentication_error.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="handlers\errors\command_error.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="handlers\errors\response_error.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="handlers\client_server_handler.py" />
+    <Compile Include="handlers\errors\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="utils\configuration.py">
       <SubType>Code</SubType>
     </Compile>
@@ -58,10 +70,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Konwencja.txt" />
+    <Content Include="Protokół.docx" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="CA\" />
     <Folder Include="handlers\" />
+    <Folder Include="handlers\errors\" />
     <Folder Include="utils\" />
   </ItemGroup>
   <PropertyGroup>

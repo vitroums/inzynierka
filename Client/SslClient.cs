@@ -114,7 +114,7 @@ namespace Client
         {
             var buffer = new byte[64];
             _stream.Read(buffer, 0, 64);
-            return System.Convert.ToInt64(System.Text.Encoding.UTF8.GetString(buffer, 0, 64), 2); ;
+            return Convert.ToInt64(System.Text.Encoding.UTF8.GetString(buffer, 0, 64), 2); ;
         }
         #endregion
 
