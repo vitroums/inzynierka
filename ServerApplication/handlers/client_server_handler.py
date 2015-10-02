@@ -18,6 +18,8 @@ class ClientServerHandler(ServerHandlerHelper):
         """
         Tworzy handler dla serwera. Pobiera instancje klasy konfiguracji
         """
+        print("client")
+        print(request.getpeercert())
         self.__ca = CertificateAuthority()
         self.__dropboxApiHandler = DropboxApi()
         super().__init__(request, client_address, server)
@@ -57,10 +59,10 @@ class ClientServerHandler(ServerHandlerHelper):
             return
         informations, keysPassword, rescuePassword = self.__requestUserInformations()
         uuid = str(uuid1())
-        certificate, keys = self.__ca.newCertificate(informations, keysPassword, uuid)
+        certificate = self.__ca.newCertificate(informations, keysPassword, uuid)
         if self.__addUserToCloud(name, mail, uuid, certificate):
             self._sendString("user-added")
-            self.__sendNewUserFiles(certificate, keys, uuid)
+            self.__sendNewUserFiles(certificate, uuid)
             response = self._receiveString()
             if response != "everything-ok":
                 self.__responseError("everything-ok", response)
@@ -178,19 +180,16 @@ class ClientServerHandler(ServerHandlerHelper):
         else:
             return True
 
-    def __sendNewUserFiles(self, certificate, keys, uuid):
+    def __sendNewUserFiles(self, certificate, uuid):
         """
         Wysłanie plików certyfikatu i klucza do użytkownika.
 
         Args:
             certificate (str): Ścieżka do pliku certyfikatu.
-            keys (str): Ścieżka do pliku kluczy.
             uuid (str): ID użytkownika.
         """
         self._sendString("certificate-file")
         self._sendFile(certificate)
-        self._sendString("keys-file")
-        self._sendFile(keys)
         self._sendString("user-id")
         self._sendString(uuid)
         
@@ -222,21 +221,11 @@ class ClientServerHandler(ServerHandlerHelper):
 
         if not self.__doesUserExist(name, mail, id):
             self._sendString("user-doesnt-exist")
-        orginalMessage = "message"
-        certificateFile = "/".join([self._configuration.certificatesDir, ".".join([id, "crt"])])
-        chiper = self.__ca.encryptStringWithPublicKey(orginalMessage, certificateFile)
-        self._sendString("decrypt-message")
-        self._sendString(chiper)
-
-        response = self._receiveString()
-        if response != "decrypted-message":
-            self.__responseError("decrypted-message", response)
-        decryptedMessage = self._receiveString()
-        if decryptedMessage == orginalMessage:
+        if self.request.getpeercert():
             self._sendString("permission-granted")
         else:
             self._sendString("permission-denied")
-            self.__authenticationError("Decryption failed")            
+            self.__authenticationError("Certificate error")          
         return True, id, name, mail
 
     def __newGroupCommand(self, id, login, mail):

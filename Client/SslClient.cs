@@ -39,12 +39,16 @@ namespace Client
         private void FetchCertificates()
         {
             //TODO: Implement proper system o featching certificates
-            var certificate = File.ReadAllText("cert.crt");
-            const string header = "-----BEGIN CERTIFICATE-----";
-            const string footer = "-----END CERTIFICATE-----";
-            var start = certificate.IndexOf(header, StringComparison.Ordinal) + header.Length;
-            var end = certificate.IndexOf(footer, start, StringComparison.Ordinal) - start;
-            _certificates.Add(new X509Certificate(Convert.FromBase64String(certificate.Substring(start, end))));
+            X509Certificate cert;
+            if (File.Exists("certificate.pfx"))
+            {
+                cert = new X509Certificate2("certificate.pfx");
+            }
+            else
+            {
+                cert = new X509Certificate();
+            }
+            _certificates.Add(cert);
         }
         #endregion
 

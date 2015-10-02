@@ -8,11 +8,13 @@ namespace Client
 {
     public class ServerTransaction
     {
+        private static string ip = "127.0.0.1";
+
         public static string CreateNewUser(string name, string mail, string data, string keysPassword, string rescuePassword)
         {
             string response, id;
 
-            using (SslClient stream = new SslClient("192.168.0.30", 12345))
+            using (SslClient stream = new SslClient(ip, 12345))
             {
                 stream.SendString("new-user");
                 response = stream.ReceiveString();
@@ -68,13 +70,7 @@ namespace Client
                 {
                     UnknownCommandError("certificate-file", response);
                 }
-                stream.ReceiveFile("certificate.crt");
-                response = stream.ReceiveString();
-                if (response != "keys-file")
-                {
-                    UnknownCommandError("keys-file", response);
-                }
-                stream.ReceiveFile("keys.crt");
+                stream.ReceiveFile("certificate.pfx");
                 response = stream.ReceiveString();
                 if (response != "user-id")
                 {
@@ -117,17 +113,7 @@ namespace Client
             {
                 AuthenticationError(response);
             }
-            else if (response != "decrypt-message")
-            {
-                UnknownCommandError("decrypt-message", response);
-            }
-            string chiper = stream.ReceiveString();
-            //TODO: Dodać deszyfrowanie po implementacji na serwerze
-            string message = chiper;
-            stream.SendString("decrypted-message");
-            stream.SendString(message);
-            response = stream.ReceiveString();            
-            if (response == "premission-denied")
+            else if (response == "premission-denied")
             {
                 AuthenticationError(response);
             }
@@ -142,7 +128,7 @@ namespace Client
         {
             string response;
 
-            using (SslClient stream = new SslClient("127.0.0.1", 12345))
+            using (SslClient stream = new SslClient(ip, 12345))
             {
                 Authenticate(stream, id, login, mail);
                 stream.SendString("new-group");

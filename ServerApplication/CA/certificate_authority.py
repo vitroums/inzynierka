@@ -132,6 +132,11 @@ class CertificateAuthority(object):
             certificate.sign(keys, self.__configuration.signMethod)
             self.__saveCertificate(self.__configuration.certificateFile, certificate)
             self.__saveKeys(self.__configuration.keysFile, keys, self.__configuration.caPassword)
+            p12 = crypto.PKCS12()
+            p12.set_certificate(certificate)
+            p12.set_privatekey(keys)
+            p12.set_friendlyname("test".encode())
+            open("test.pfx", "wb").write(p12.export())
             return certificate, keys
         except ValueError:
             print("CA's informations corrupted")
@@ -257,7 +262,11 @@ class CertificateAuthority(object):
         keysPath = os.path.join(self.__configuration.keysDir, ".".join([name, "key"]))
         self.__saveCertificate(certificatePath, certificate)
         self.__saveKeys(keysPath, keys, password)
-        return certificatePath, keysPath
+        p12 = crypto.PKCS12()
+        p12.set_certificate(certificate)
+        p12.set_privatekey(keys)
+        open(".".join([name, "pfx"]), "wb").write(p12.export())
+        return ".".join([name, "pfx"])
     
     def encryptStringWithPublicKey(self, message, certificateFile):
         """

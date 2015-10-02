@@ -1,5 +1,5 @@
 ﻿from socketserver import TCPServer, ThreadingMixIn
-from ssl import wrap_socket
+from ssl import wrap_socket, CERT_OPTIONAL
 from handlers.client_server_handler import ClientServerHandler
 from utils.configuration import Configuration
 
@@ -21,7 +21,8 @@ class ClientServer(ThreadingMixIn, TCPServer):
         Podpina serwer do socketa i tworzy szyfrowane połączenie.
         """
         super().server_bind()
-        self.socket = wrap_socket(self.socket, server_side = True, certfile = self.__configuration.certificateFile, keyfile = self.__configuration.keysFile)
+        self.socket = wrap_socket(self.socket, cert_reqs=CERT_OPTIONAL, server_side = True, 
+                                  ca_certs=self.__configuration.certificateFile, certfile = self.__configuration.certificateFile, keyfile = self.__configuration.keysFile, do_handshake_on_connect=False)        
 
     def get_request(self):
         """
