@@ -7,6 +7,7 @@ using DropNet;
 using DropNet.Models;
 using System.Xml;
 using System.IO;
+using System.Xml.Linq;
 
 namespace Client
 {
@@ -49,9 +50,9 @@ namespace Client
             {
                 Console.WriteLine("Loading db, path: {0} ", _path);
                 var fileBytes = _client.GetFile(_path + "list.xml");
-                string db = Encoding.UTF8.GetString(fileBytes, 0, fileBytes.Length);
+                File.WriteAllBytes("list.xml", fileBytes);
                 XmlDocument xd = new XmlDocument();
-                xd.LoadXml(db);
+                xd.Load("list.xml");
                 XmlNode UsersListNode = xd.SelectSingleNode("/Users");
                 XmlNodeList UsersNodeList = UsersListNode.SelectNodes("User");
                 foreach (XmlNode node in UsersNodeList)
@@ -63,20 +64,20 @@ namespace Client
                     _userList.Add(_user);
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                Console.WriteLine("Couldn't load database!");
-                throw;
+                Console.WriteLine("ERROR! Couldnt load database");
             }
+           
         }
 
-        // analogicnzie dla grup
+        // analogicznie dla grup
         public void LoadGroups()
         {
             try
             {
                 Console.WriteLine("Loading groups list, path: {0} ", _path);
-                var fileBytes = _client.GetFile(_path + "groups.xml");
+                var fileBytes = _client.GetFile(_path + "group.xml");
                 string groups = Encoding.UTF8.GetString(fileBytes, 0, fileBytes.Length);
                 XmlDocument xd = new XmlDocument();
                 xd.LoadXml(groups);
@@ -141,16 +142,17 @@ namespace Client
             {
                 names.Add(g.name);
             }
-            //List<string> tmpList = new List<string>();
-            //var metaData = _client.GetMetaData("/", false, false);
-            //for (int i = 0; i < metaData.Contents.Count; i++)
-            //{
-            //    if (metaData.Contents[i].Is_Dir == true)
-            //    {
-            //        tmpList.Add(metaData.Contents[i].Name);
-            //    }
-            //}
-            //return tmpList;
+            return names;
+        }
+
+        // getter do _groupList
+        public List<string> GetUsersNamesList()
+        {
+            List<string> names = new List<string>();
+            foreach (User u in _userList)
+            {
+                names.Add(u.nick);
+            }
             return names;
         }
 
@@ -185,13 +187,38 @@ namespace Client
                 newUser.nick = login;
                 _userList.Add(newUser);
             }
+            UpdateGroupUserList();
             return _userList;
+        }
+
+        public void UpdateGroupUserList()
+        {
+
+            var settings = new XmlWriterSettings();
+            settings.Indent = true;
+            using (XmlWriter writer = XmlWriter.Create("list.xml", settings))
+            {
+                writer.WriteStartElement("Users");
+                foreach(User u in _userList)
+                {
+                    writer.WriteStartElement("User");
+                    writer.WriteAttributeString("guid", u.guid);
+                    writer.WriteAttributeString("nick", u.nick);
+                    writer.WriteAttributeString("mail", u.mail);
+                    writer.WriteEndElement();
+                }
+                writer.WriteEndElement();
+                writer.Flush();
+            }
+            byte[] bytes = System.IO.File.ReadAllBytes("list.xml");
+            _client.UploadFile(_path, "list.xml", bytes);
         }
 
         // zaladowanie listy plikow uzytkownika 
         public List<string> GetFilesList(string guid)
         {
             List<string> files = new List<string>();
+            SendWelcomeFile(guid);
             MetaData meta = _client.GetMetaData(_path+guid+"/", null, false, false);
             for (int i = 0; i < meta.Contents.Count; i++ )
             {
@@ -202,6 +229,14 @@ namespace Client
             }
             return files;
         }
+        public void SendWelcomeFile(string guid)
+        {
+            string str = "Welcome!";
+            byte[] bytes = new byte[str.Length * sizeof(char)];
+            System.Buffer.BlockCopy(str.ToCharArray(), 0, bytes, 0, bytes.Length);
+            _client.UploadFile(_path + guid + "/", "welcome.txt", bytes);
+        }
+
     }
 
     public class User

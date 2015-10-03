@@ -1,6 +1,7 @@
 ﻿using System;
 using Client;
 using System.Collections.Generic;
+using System.Xml;
 namespace ClientApplicationTest
 {
     public class Application
@@ -11,8 +12,12 @@ namespace ClientApplicationTest
             
             
             //client.UploadFile("asd.txt", "sometrickygu1d");
-            var sl = client.GetFilesList("sometrickygu1d");
-            Console.WriteLine(sl);
+            client.SendWelcomeFile("705a13f8-69ab-11e5-8a8b-f6d8a6108e1a");
+            List<string> s1 = client.GetFilesList("705a13f8-69ab-11e5-8a8b-f6d8a6108e1a");
+            foreach(String s in s1)
+            {
+                Console.WriteLine(s);
+            }
             Console.ReadKey();
             //using (SslClient stream = new SslClient("127.0.0.1", 9999))
             //{

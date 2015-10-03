@@ -33,16 +33,14 @@ namespace ClientApplication
             // output do textBox'a i konsoli
             Console.SetOut(new MultiTextWriter(new ControlWriter(textBox1), Console.Out));
             // output tylko do textbox'a       
-            //Console.SetOut(new ControlWriter(textBox1));
-
-
-            
+            //Console.SetOut(new ControlWriter(textBox1));   
             
         }
-
+        // send file to selected user
         private void button1_Click(object sender, EventArgs e)
         {
-
+            User selectedUser = (User)listBox2.SelectedItem;
+            Console.WriteLine("omg");
         }
         // new user
         private void ButtonNewUserClick(object sender, EventArgs e)
@@ -67,6 +65,8 @@ namespace ClientApplication
                 MessageBox.Show("Welcome, your ID: " + GUID, "New user");
                 Console.WriteLine("Connected as: \n {0}", GUID);
                 Connected = true;
+                UpdateGroupList();
+                textBox4.Text = login;
             }
             catch (UnknownCommadError error)
             {
@@ -80,34 +80,46 @@ namespace ClientApplication
         // new group
         private void ButtonNewGroupClick(object sender, EventArgs e)
         {
-            if (GUID != "" && login != "" && email != "")
+            if (Connected)
             {
-                try
+                if (GUID != "" && login != "" && email != "")
                 {
-                    var name = Interaction.InputBox("Podaj nazwę grupy", "Nazwa", "");
-                    var password = Interaction.InputBox("Podaj hasło grupy", "Hasło", "");
-                    ServerTransaction.CreateNewGroup(name, password, GUID, login, email);
-                    MessageBox.Show("Group \"" + name + "\" created", "New group");
-                }
-                catch (UnknownCommadError error)
-                {
-                    MessageBox.Show(error.Message);
-                }
-                catch (ServerResponseError error)
-                {
-                    MessageBox.Show(error.Message);
-                }
-                catch (AuthenticationError error)
-                {
-                    MessageBox.Show(error.Message);
+                    try
+                    {
+                        var name = Interaction.InputBox("Podaj nazwę grupy", "Nazwa", "");
+                        var password = Interaction.InputBox("Podaj hasło grupy", "Hasło", "");
+                        ServerTransaction.CreateNewGroup(name, password, GUID, login, email);
+                        MessageBox.Show("Group \"" + name + "\" created", "New group");
+                        UpdateGroupList();
+                    }
+                    catch (UnknownCommadError error)
+                    {
+                        MessageBox.Show(error.Message);
+                    }
+                    catch (ServerResponseError error)
+                    {
+                        MessageBox.Show(error.Message);
+                    }
+                    catch (AuthenticationError error)
+                    {
+                        MessageBox.Show(error.Message);
+                    }
                 }
             }
+            else
+            {
+                Console.WriteLine("ERROR! Not connected to the server");
+            }
+            
         }
         // connect to group
         private void ButtonConnectToGroupClick(object sender, EventArgs e)
         {
             if (Connected)
             {
+                List<string> s = new List<string>();
+                listBox2.DataSource = s;
+                listBox3.DataSource = s;
                 string selectedGroup = listBox1.SelectedItem.ToString();
                 Console.WriteLine("Selected group: {0}", selectedGroup);
                 string password = textBox3.Text;
@@ -118,7 +130,9 @@ namespace ClientApplication
                         dba = new DropboxApi(selectedGroup);
                         Console.WriteLine("Successfully connected to {0} group!", selectedGroup);
                         dba.LoadDatabase();
-                        UpdateLists(GUID, email, login);
+                        listBox2.DataSource = dba.AddUserIfNotExist(GUID, email, login);
+                        listBox3.DataSource = dba.GetFilesList(GUID);
+                        ConnectedToGroup = true;
                     }
                     else
                     {
@@ -136,12 +150,6 @@ namespace ClientApplication
             }
 
         }
-        public void UpdateLists(string guid, string email, string login)
-        {
-            UpdateGroupList();
-            listBox2.DataSource = dba.AddUserIfNotExist(guid, email, login);
-            listBox3.DataSource = dba.GetFilesList(guid);
-        }
         void UpdateGroupList()
         {
             listBox1.DataSource = dba.GetGroupsNamesList();
@@ -151,14 +159,20 @@ namespace ClientApplication
         private void ButtonChooseCertClick(object sender, EventArgs e)
         {
             SslClient stream = new SslClient("127.0.0.1", 12345);
-                
-                if (ServerTransaction.Authenticate(stream, "9033a13a-5eb1-11e5-b3b0-f6d8a6108e1a", "mietek", "mietek@example.com"))
+            GUID = "110d98ac-69b5-11e5-aeca-f6d8a6108e1a";
+            email = "wert@example.com";
+            login = "wert";
+            if (ServerTransaction.Authenticate(stream, "110d98ac-69b5-11e5-aeca-f6d8a6108e1a", "wert", "wert@example.com"))
                 {
                     Console.WriteLine("Authenticated");
+                    Connected = true;
+                    UpdateGroupList();
+                    textBox4.Text = login;
                 }
                 else
                 {
                     Console.WriteLine("Failed");
+                    Connected = false;
                 }
             
         }
@@ -180,6 +194,11 @@ namespace ClientApplication
             if (login == "")
                 return false;
             return true;
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+
         }
     }
 
