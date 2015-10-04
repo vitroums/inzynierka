@@ -128,9 +128,21 @@ namespace Client
             catch (Exception)
             {
                 Console.WriteLine("Couldnt upload {0} to path: {1}!", name, _path + guid + '/' + name);
-            }
+            }       
+        }
 
-            
+        public void UploadFile(string fullPath,string name, string guid)
+        {
+            try
+            {
+                byte[] bytes = System.IO.File.ReadAllBytes(fullPath);
+                var result = _client.UploadFile(_path + guid + '/', name, bytes, true);
+                Console.WriteLine(result);
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Couldnt upload {0} to path: {1}!", name, _path + guid + '/' + name);
+            }
         }
 
         // getter do _groupList
@@ -145,7 +157,7 @@ namespace Client
             return names;
         }
 
-        // getter do _groupList
+        // getter do _usersList
         public List<string> GetUsersNamesList()
         {
             List<string> names = new List<string>();
@@ -229,6 +241,7 @@ namespace Client
             }
             return files;
         }
+
         public void SendWelcomeFile(string guid)
         {
             string str = "Welcome!";

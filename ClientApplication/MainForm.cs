@@ -25,6 +25,7 @@ namespace ClientApplication
         string login = "";
         bool Connected = false;
         bool ConnectedToGroup = false;
+        string choosenCert = "certificate.pfx";
         
         
         public MainForm()
@@ -39,8 +40,52 @@ namespace ClientApplication
         // send file to selected user
         private void button1_Click(object sender, EventArgs e)
         {
-            User selectedUser = (User)listBox2.SelectedItem;
-            Console.WriteLine("omg");
+            if (Connected)
+            {
+                if(ConnectedToGroup)
+                {
+                    User selectedUser = (User)listBox2.SelectedItem;
+                    OpenFileDialog ofd = new OpenFileDialog();
+                    DialogResult result = ofd.ShowDialog();
+                    if (result == DialogResult.OK)
+                    {
+                        string fPath = ofd.FileName;
+                        string fName = ofd.SafeFileName;
+                        if (!checkBox1.Checked)
+                        {
+                            dba.UploadFile(fPath, fName, selectedUser.guid);
+                            Console.WriteLine("Successfully uploaded: {0}", fName);
+                            if (selectedUser.nick == login)
+                            {
+                                listBox3.DataSource = dba.GetFilesList(GUID);
+                            }
+                        }
+                        else
+                        {
+                            // upload z szyfrowaniem
+                            StreamReader streamReader = new StreamReader(fPath);
+                            string fContent = streamReader.ReadToEnd();
+                            streamReader.Close();
+
+                            // TODO: pobranie publicznego selectedUser'a
+                            ServerTransaction.EncryptString(fContent, "selectedUser_publicKey");
+                            dba.UploadFile(fPath, fName+"enc", selectedUser.guid);
+                            Console.WriteLine("Successfully uploaded");
+                        }
+                                     
+                    }
+                    
+                }
+                else
+                {
+                    Console.WriteLine("ERROR! Not connected to the group");
+                }
+                
+            }
+            else
+            {
+                Console.WriteLine("ERROR! Not connected to the server");
+            }
         }
         // new user
         private void ButtonNewUserClick(object sender, EventArgs e)
@@ -150,6 +195,7 @@ namespace ClientApplication
             }
 
         }
+
         void UpdateGroupList()
         {
             listBox1.DataSource = dba.GetGroupsNamesList();
@@ -196,9 +242,44 @@ namespace ClientApplication
             return true;
         }
 
+        // download selected file
         private void button5_Click(object sender, EventArgs e)
         {
+            if (Connected)
+            {
+                if (ConnectedToGroup)
+                {
+                    string selectedFile = (string)listBox3.SelectedItem;
+                    if (!checkBox1.Checked)
+                    {
+                        dba.GetFile(selectedFile, GUID);
+                        Console.WriteLine("Successfully download: {0}", selectedFile);
 
+                    }
+                    else
+                    {
+                        // download z deszyfrowaniem
+                        dba.GetFile(selectedFile, GUID);
+                        Console.WriteLine("Successfully download: {0}", selectedFile);
+                        StreamReader streamReader = new StreamReader(selectedFile);
+                        string fContent = streamReader.ReadToEnd();
+                        streamReader.Close();
+                        string decrypted = ServerTransaction.DecryptString(fContent, choosenCert);
+                        System.IO.File.WriteAllText("dec"+selectedFile, decrypted);
+                        Console.WriteLine("Successfully decrypted");
+                    }
+
+                }
+                else
+                {
+                    Console.WriteLine("ERROR! Not connected to the group");
+                }
+
+            }
+            else
+            {
+                Console.WriteLine("ERROR! Not connected to the server");
+            }
         }
     }
 

@@ -208,11 +208,11 @@
             // checkBox1
             // 
             this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(228, 211);
+            this.checkBox1.Location = new System.Drawing.Point(210, 211);
             this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(86, 17);
+            this.checkBox1.Size = new System.Drawing.Size(104, 17);
             this.checkBox1.TabIndex = 18;
-            this.checkBox1.Text = "Encrypt data";
+            this.checkBox1.Text = "En(de)crypt data";
             this.checkBox1.UseVisualStyleBackColor = true;
             // 
             // label6
