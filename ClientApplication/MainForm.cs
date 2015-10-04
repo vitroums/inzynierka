@@ -69,7 +69,7 @@ namespace ClientApplication
 
                             // TODO: pobranie publicznego selectedUser'a
                             ServerTransaction.EncryptString(fContent, "selectedUser_publicKey");
-                            dba.UploadFile(fPath, fName+"enc", selectedUser.guid);
+                            dba.UploadFile(fPath, fName, selectedUser.guid);
                             Console.WriteLine("Successfully uploaded");
                         }
                                      
