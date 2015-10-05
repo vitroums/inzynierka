@@ -4,6 +4,8 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using Client.Errors;
+using System.Security.Authentication;
 
 namespace Client
 {
@@ -16,11 +18,18 @@ namespace Client
 
         public SslClient(string ip, int port, int bufferSize = 1024) : base(ip, port)
         {
-            _bufferSize = bufferSize;
-            _certificates = new X509CertificateCollection();
-            FetchCertificates();
-            _stream = new SslStream(GetStream(), false, ServerCertificateValidation, UserCertificateSelection);
-            _stream.AuthenticateAsClient(ip);
+            try
+            {
+                _bufferSize = bufferSize;
+                _certificates = new X509CertificateCollection();
+                FetchCertificates();
+                _stream = new SslStream(GetStream(), false, ServerCertificateValidation, UserCertificateSelection);
+                _stream.AuthenticateAsClient(ip);
+            }
+            catch (AuthenticationException)
+            {
+                throw new AuthenticationError("Problem with certificate");
+            }
         }
  
         #region Certificates Proccess

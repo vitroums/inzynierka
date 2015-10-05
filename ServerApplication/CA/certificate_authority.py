@@ -266,7 +266,7 @@ class CertificateAuthority(object):
         p12.set_certificate(certificate)
         p12.set_privatekey(keys)
         open(".".join([name, "pfx"]), "wb").write(p12.export())
-        return ".".join([name, "pfx"])
+        return ".".join([name, "pfx"]), certificatePath
     
     def encryptStringWithPublicKey(self, message, certificateFile):
         """
