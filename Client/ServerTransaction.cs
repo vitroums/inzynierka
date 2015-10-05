@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Client.Errors;
+using System.IO;
 
 namespace Client
 {
@@ -211,10 +212,11 @@ namespace Client
 
         public static string EncryptString(string messageToEncrypt, string pathToPublicKey)
         {
-            X509Certificate2 certificate;
+            X509Certificate certificate;
+            byte[] certBuffer = GetBytesFromPEM(pathToPublicKey);
             try
             {
-                certificate = new X509Certificate2(pathToPublicKey);
+                certificate = new X509Certificate(certBuffer);
             }
             catch
             {
@@ -288,6 +290,24 @@ namespace Client
                     break;
             }
             throw new AuthenticationError(messageBuilder.ToString());
+        }
+
+        static public byte[] GetBytesFromPEM(string pathToFile)
+        {
+            var header = String.Format("-----BEGIN {0}-----", "CERTIFICATE");
+            var footer = String.Format("-----END {0}-----", "CERTIFICATE");
+
+            var pemString = System.IO.File.ReadAllText(pathToFile);
+
+            var start = pemString.IndexOf(header, StringComparison.Ordinal) + header.Length;
+            var end = pemString.IndexOf(footer, start, StringComparison.Ordinal) - start;
+
+            if (start < 0 || end < 0)
+            {
+                return null;
+            }
+
+            return Convert.FromBase64String(pemString.Substring(start, end));
         }
     }
 }

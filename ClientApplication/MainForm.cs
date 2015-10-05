@@ -68,7 +68,9 @@ namespace ClientApplication
                             streamReader.Close();
 
                             // TODO: pobranie publicznego selectedUser'a
-                            ServerTransaction.EncryptString(fContent, "selectedUser_publicKey");
+                            DropboxApi da = new DropboxApi();
+                            da.GetFile(selectedUser.guid + ".crt");
+                            ServerTransaction.EncryptString(fContent, selectedUser.guid + ".crt");
                             dba.UploadFile(fPath, fName, selectedUser.guid);
                             Console.WriteLine("Successfully uploaded");
                         }
