@@ -123,6 +123,10 @@ namespace ClientApplication
             {
                 MessageBox.Show(error.Message);
             }
+            catch (AuthenticationError error)
+            {
+                MessageBox.Show(error.Message);
+            }
         }
         // new group
         private void ButtonNewGroupClick(object sender, EventArgs e)

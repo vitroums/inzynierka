@@ -59,10 +59,10 @@ class ClientServerHandler(ServerHandlerHelper):
             return
         informations, keysPassword, rescuePassword = self.__requestUserInformations()
         uuid = str(uuid1())
-        certificate = self.__ca.newCertificate(informations, keysPassword, uuid)
+        keys, certificate = self.__ca.newCertificate(informations, keysPassword, uuid)
         if self.__addUserToCloud(name, mail, uuid, certificate):
             self._sendString("user-added")
-            self.__sendNewUserFiles(certificate, uuid)
+            self.__sendNewUserFiles(keys, uuid)
             response = self._receiveString()
             if response != "everything-ok":
                 self.__responseError("everything-ok", response)
@@ -70,7 +70,7 @@ class ClientServerHandler(ServerHandlerHelper):
                 passwordFile.write(md5(rescuePassword.encode(self._configuration.encoding)).hexdigest())
         else:
             self._sendString("problem-while-adding-user")
-            os.remove(certificate)
+            os.remove(keys)
             os.remove(keys)
 
     def __requestUserData(self):
