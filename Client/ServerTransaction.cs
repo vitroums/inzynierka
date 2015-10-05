@@ -191,14 +191,14 @@ namespace Client
             }
 
             byte[] decryptedBytes;
-            try
-            {
+            //try
+            //{
                 decryptedBytes = privateKey.Decrypt(Convert.FromBase64String(encryptedData), false);
-            }
-            catch
-            {
+            //}
+            //catch
+            //{
                 throw new CryptographicException("Unable to decrypt data.");
-            }
+            //}
 
             if (decryptedBytes.Length == 0)
             {
@@ -212,28 +212,28 @@ namespace Client
 
         public static string EncryptString(string messageToEncrypt, string pathToPublicKey)
         {
-            X509Certificate certificate;
+            X509Certificate2 certificate;
             byte[] certBuffer = GetBytesFromPEM(pathToPublicKey);
             try
             {
-                certificate = new X509Certificate(certBuffer);
+                certificate = new X509Certificate2(certBuffer);
             }
             catch
             {
                 throw new CryptographicException("Unable to open key file.");
             }
 
-            RSACryptoServiceProvider myRSAProvide = new RSACryptoServiceProvider();
+            RSACryptoServiceProvider myRSAProvide = (RSACryptoServiceProvider)certificate.PublicKey.Key;
             byte[] resultBytes = null;
-            try
-            {
+            //try
+            //{
                var decryptedDateBytes = Encoding.UTF8.GetBytes(messageToEncrypt);
                resultBytes = myRSAProvide.Encrypt(decryptedDateBytes, false);
-            }  
-            catch
-            {
-                throw new CryptographicException("Unable to encypt data.");
-            }
+            //}  
+            //catch
+            //{
+            //    throw new CryptographicException("Unable to encypt data.");
+            //}
 
             if (resultBytes.Length == 0)
             {

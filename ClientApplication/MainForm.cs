@@ -70,8 +70,9 @@ namespace ClientApplication
                             // TODO: pobranie publicznego selectedUser'a
                             DropboxApi da = new DropboxApi();
                             da.GetFile(selectedUser.guid + ".crt");
-                            ServerTransaction.EncryptString(fContent, selectedUser.guid + ".crt");
-                            dba.UploadFile(fPath, fName, selectedUser.guid);
+                            string encryptedData = ServerTransaction.EncryptString(fContent, selectedUser.guid + ".crt");
+                            System.IO.File.WriteAllText(fPath + "enc", encryptedData);
+                            dba.UploadFile(fPath+"enc", fName, selectedUser.guid);
                             Console.WriteLine("Successfully uploaded");
                         }
                                      
@@ -211,10 +212,10 @@ namespace ClientApplication
         private void ButtonChooseCertClick(object sender, EventArgs e)
         {
             SslClient stream = new SslClient("127.0.0.1", 12345);
-            GUID = "110d98ac-69b5-11e5-aeca-f6d8a6108e1a";
-            email = "wert@example.com";
-            login = "wert";
-            if (ServerTransaction.Authenticate(stream, "110d98ac-69b5-11e5-aeca-f6d8a6108e1a", "wert", "wert@example.com"))
+            GUID = "5363605c-6b5d-11e5-b19f-f6d8a6108e1a";
+            email = "eti@example.com";
+            login = "eti";
+            if (ServerTransaction.Authenticate(stream, "5363605c-6b5d-11e5-b19f-f6d8a6108e1a", "eti", "eti@example.com"))
                 {
                     Console.WriteLine("Authenticated");
                     Connected = true;
