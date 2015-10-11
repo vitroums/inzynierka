@@ -68,8 +68,11 @@ namespace ClientApplication
                             streamReader.Close();
 
                             // TODO: pobranie publicznego selectedUser'a
-                            ServerTransaction.EncryptString(fContent, "selectedUser_publicKey");
-                            dba.UploadFile(fPath, fName, selectedUser.guid);
+                            DropboxApi da = new DropboxApi();
+                            da.GetFile(selectedUser.guid + ".crt");
+                            var temp = Path.GetTempFileName();
+                            ServerTransaction.EncryptFile(fPath, temp, selectedUser.guid + ".crt");
+                            dba.UploadFile(temp, fName, selectedUser.guid);
                             Console.WriteLine("Successfully uploaded");
                         }
                                      
@@ -209,10 +212,11 @@ namespace ClientApplication
         private void ButtonChooseCertClick(object sender, EventArgs e)
         {
             SslClient stream = new SslClient("127.0.0.1", 12345);
-            GUID = "110d98ac-69b5-11e5-aeca-f6d8a6108e1a";
-            email = "wert@example.com";
-            login = "wert";
-            if (ServerTransaction.Authenticate(stream, "110d98ac-69b5-11e5-aeca-f6d8a6108e1a", "wert", "wert@example.com"))
+
+            GUID = "debf63fe-6b72-11e5-9c5f-28d244eb956f";
+            email = "1234";
+            login = "12345";
+            if (ServerTransaction.Authenticate(stream, GUID, login, email))
                 {
                     Console.WriteLine("Authenticated");
                     Connected = true;
@@ -265,11 +269,7 @@ namespace ClientApplication
                         // download z deszyfrowaniem
                         dba.GetFile(selectedFile, GUID);
                         Console.WriteLine("Successfully download: {0}", selectedFile);
-                        StreamReader streamReader = new StreamReader(selectedFile);
-                        string fContent = streamReader.ReadToEnd();
-                        streamReader.Close();
-                        string decrypted = ServerTransaction.DecryptString(fContent, choosenCert);
-                        System.IO.File.WriteAllText("dec"+selectedFile, decrypted);
+                        ServerTransaction.DecryptFile(selectedFile, "decrypted.exe", choosenCert);
                         Console.WriteLine("Successfully decrypted");
                     }
 

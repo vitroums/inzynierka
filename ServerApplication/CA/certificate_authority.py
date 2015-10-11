@@ -260,6 +260,7 @@ class CertificateAuthority(object):
         certificate = self.__signCertificate(certificate)
         certificatePath = os.path.join(self.__configuration.certificatesDir, ".".join([name, "crt"]))
         keysPath = os.path.join(self.__configuration.keysDir, ".".join([name, "key"]))
+        print(certificatePath)
         self.__saveCertificate(certificatePath, certificate)
         self.__saveKeys(keysPath, keys, password)
         p12 = crypto.PKCS12()
