@@ -192,14 +192,14 @@ namespace Client
             }
 
             byte[] decryptedBytes;
-            try
-            {
+            //try
+            //{
                 decryptedBytes = privateKey.Decrypt(Convert.FromBase64String(encryptedData), false);
-            }
-            catch
-            {
+            //}
+            //catch
+            //{
                 throw new CryptographicException("Unable to decrypt data.");
-            }
+            //}
 
             if (decryptedBytes.Length == 0)
             {
@@ -214,25 +214,27 @@ namespace Client
         public static string EncryptString(string messageToEncrypt, string pathToPublicKey)
         {
             X509Certificate2 certificate;
+            byte[] certBuffer = GetBytesFromPEM(pathToPublicKey);
             try
             {
-                certificate = new X509Certificate2(pathToPublicKey);
+                certificate = new X509Certificate2(certBuffer);
             }
             catch
             {
                 throw new CryptographicException("Unable to open key file.");
             }
+
             RSACryptoServiceProvider myRSAProvide = (RSACryptoServiceProvider)certificate.PublicKey.Key;
             byte[] resultBytes = null;
-            try
-            {
-                var decryptedDateBytes = Encoding.UTF8.GetBytes(messageToEncrypt);
-                resultBytes = myRSAProvide.Encrypt(decryptedDateBytes, false);
-            }
-            catch
-            {
-                throw new CryptographicException("Unable to encypt data.");
-            }
+            //try
+            //{
+               var decryptedDateBytes = Encoding.UTF8.GetBytes(messageToEncrypt);
+               resultBytes = myRSAProvide.Encrypt(decryptedDateBytes, false);
+            //}  
+            //catch
+            //{
+            //    throw new CryptographicException("Unable to encypt data.");
+            //}
 
             if (resultBytes.Length == 0)
             {
@@ -472,6 +474,24 @@ namespace Client
                     break;
             }
             throw new AuthenticationError(messageBuilder.ToString());
+        }
+
+        static public byte[] GetBytesFromPEM(string pathToFile)
+        {
+            var header = String.Format("-----BEGIN {0}-----", "CERTIFICATE");
+            var footer = String.Format("-----END {0}-----", "CERTIFICATE");
+
+            var pemString = System.IO.File.ReadAllText(pathToFile);
+
+            var start = pemString.IndexOf(header, StringComparison.Ordinal) + header.Length;
+            var end = pemString.IndexOf(footer, start, StringComparison.Ordinal) - start;
+
+            if (start < 0 || end < 0)
+            {
+                return null;
+            }
+
+            return Convert.FromBase64String(pemString.Substring(start, end));
         }
     }
 }
