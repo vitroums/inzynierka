@@ -11,6 +11,7 @@ using Client;
 using Client.Errors;
 using System.IO;
 using Microsoft.VisualBasic;
+using System.Security.Cryptography.X509Certificates;
 
 
 namespace ClientApplication
@@ -33,6 +34,7 @@ namespace ClientApplication
             InitializeComponent();
             // output do textBox'a i konsoli
             Console.SetOut(new MultiTextWriter(new ControlWriter(textBox1), Console.Out));
+            listBox4.DataSource = GetCertificates();
             // output tylko do textbox'a       
             //Console.SetOut(new ControlWriter(textBox1));   
             
@@ -211,23 +213,32 @@ namespace ClientApplication
         // choose cert
         private void ButtonChooseCertClick(object sender, EventArgs e)
         {
-            SslClient stream = new SslClient("127.0.0.1", 12345);
+            OpenFileDialog ofd = new OpenFileDialog();
+            DialogResult result = ofd.ShowDialog();
+            if (result == DialogResult.OK) // Test result.
+            {
+                choosenCert = ofd.FileName;
+            }
+            Console.WriteLine("Choose certificate: {0}", ofd.FileName);
 
-            GUID = "debf63fe-6b72-11e5-9c5f-28d244eb956f";
-            email = "1234";
-            login = "12345";
-            if (ServerTransaction.Authenticate(stream, GUID, login, email))
-                {
-                    Console.WriteLine("Authenticated");
-                    Connected = true;
-                    UpdateGroupList();
-                    textBox4.Text = login;
-                }
-                else
-                {
-                    Console.WriteLine("Failed");
-                    Connected = false;
-                }
+
+            //SslClient stream = new SslClient("127.0.0.1", 12345);
+
+            //GUID = "debf63fe-6b72-11e5-9c5f-28d244eb956f";
+            //email = "1234";
+            //login = "12345";
+            //if (ServerTransaction.Authenticate(stream, GUID, login, email))
+            //    {
+            //        Console.WriteLine("Authenticated");
+            //        Connected = true;
+            //        UpdateGroupList();
+            //        textBox4.Text = login;
+            //    }
+            //    else
+            //    {
+            //        Console.WriteLine("Failed");
+            //        Connected = false;
+            //    }
             
         }
 
@@ -284,6 +295,40 @@ namespace ClientApplication
             {
                 Console.WriteLine("ERROR! Not connected to the server");
             }
+        }
+
+        public List<X509Certificate2> GetCertificates()
+        {
+            Console.WriteLine("Getting certs..");
+            var store = new X509Store(StoreLocation.CurrentUser);
+            List<X509Certificate2> validCertList = new List<X509Certificate2>();
+
+            store.Open(OpenFlags.ReadOnly);
+
+            var certificates = store.Certificates;
+            foreach (var certificate in certificates)
+            {
+                string issuerName = certificate.GetIssuerName();
+                string[] pools = issuerName.Split(',');
+                foreach(string pool in pools)
+                {
+                    if (pool == " CN=PKI Cloud")
+                    {
+                        validCertList.Add(new X509Certificate2(certificate));
+                        break;
+                    }
+                }
+            }
+
+            store.Close();
+
+            return validCertList;
+        }
+
+        // connect button
+        private void button7_Click(object sender, EventArgs e)
+        {
+
         }
     }
 
