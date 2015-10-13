@@ -9,16 +9,12 @@ namespace ClientApplicationTest
         public static void Main()
         {
             var client = new DropboxApi("group1");
-            
+            using (SslClient stream = new SslClient("127.0.0.1", 9999))
+            {
+
+            }
             
             //client.UploadFile("asd.txt", "sometrickygu1d");
-            client.SendWelcomeFile("705a13f8-69ab-11e5-8a8b-f6d8a6108e1a");
-            List<string> s1 = client.GetFilesList("705a13f8-69ab-11e5-8a8b-f6d8a6108e1a");
-            foreach(String s in s1)
-            {
-                Console.WriteLine(s);
-            }
-            Console.ReadKey();
             //using (SslClient stream = new SslClient("127.0.0.1", 9999))
             //{
             //    stream.SendString("new-user");
