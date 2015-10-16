@@ -95,56 +95,22 @@ namespace ClientApplication
         // new user
         private void ButtonNewUserClick(object sender, EventArgs e)
         {
-
-            var country = Interaction.InputBox("Podaj nazwę kraju", "Kraj", "PL");
-            var state = Interaction.InputBox("Podaj nazwę wojewodztwa/regionu", "Region", "Pomerania");
-            var city = Interaction.InputBox("Podaj nazwę miasta", "Miasto", "Gdansk");
-            var organization = Interaction.InputBox("Podaj nazwę organizacji", "Organizacja", "PG");
-            var unit = Interaction.InputBox("Podaj nazwę oddziału/jednostki", "Oddział", "ETI");
-            email = Interaction.InputBox("Podaj email", "Email", "fail@example.com");
-            login = Interaction.InputBox("Podaj login", "Login", "");
-            if (!ValidateCertPools(country, state, city, organization, unit, email, login))
+            using (var newUserForm = new NewUserForm())
             {
-                Console.WriteLine("ERROR! Niepoprawne dane do wygenerowania certyfikatu");
-                return;
-            }
-            var certPools = country + ";" + state + ";" + city + ";" + organization + ";" + unit + ";" + login;
-            try
-            {
-                GUID = ServerTransaction.CreateNewUser(login, email, certPools, "1234", "123456");
-                MessageBox.Show("Welcome, your ID: " + GUID, "New user");
-                Console.WriteLine("Connected as: \n {0}", GUID);
-                Connected = true;
-                UpdateGroupList();
-                textBox4.Text = login;
-            }
-            catch (UnknownCommadError error)
-            {
-                MessageBox.Show(error.Message);
-            }
-            catch (ServerResponseError error)
-            {
-                MessageBox.Show(error.Message);
-            }
-            catch (AuthenticationError error)
-            {
-                MessageBox.Show(error.Message);
-            }
-        }
-        // new group
-        private void ButtonNewGroupClick(object sender, EventArgs e)
-        {
-            if (Connected)
-            {
-                if (GUID != "" && login != "" && email != "")
+                newUserForm.ShowDialog();
+                if (newUserForm.DialogResult == DialogResult.OK)
                 {
+                    var newUserInfo = newUserForm.NewUserInfo;
                     try
                     {
-                        var name = Interaction.InputBox("Podaj nazwę grupy", "Nazwa", "");
-                        var password = Interaction.InputBox("Podaj hasło grupy", "Hasło", "");
-                        ServerTransaction.CreateNewGroup(name, password, GUID, login, email);
-                        MessageBox.Show("Group \"" + name + "\" created", "New group");
+                        GUID = ServerTransaction.CreateNewUser(newUserInfo.CommonName, newUserInfo.Email, newUserInfo.ToString(), "1234", "123456");
+                        MessageBox.Show("Welcome, your ID: " + GUID, "New user");
+                        Console.WriteLine("Connected as: \n {0}", GUID);
+                        Connected = true;
                         UpdateGroupList();
+                        textBox4.Text = login;
+                        login = newUserInfo.CommonName;
+                        email = newUserInfo.Email;
                     }
                     catch (UnknownCommadError error)
                     {
@@ -157,6 +123,42 @@ namespace ClientApplication
                     catch (AuthenticationError error)
                     {
                         MessageBox.Show(error.Message);
+                    }
+                }
+            }
+        }
+        // new group
+        private void ButtonNewGroupClick(object sender, EventArgs e)
+        {
+            if (Connected)
+            {
+                using (var newGroupForm = new NewGroupForm())
+                {
+                    newGroupForm.ShowDialog();
+                    var newGroupInfo = newGroupForm.NewGroupInfo;
+                    if (newGroupForm.DialogResult == DialogResult.OK)
+                    {
+                        if (GUID != "" && login != "" && email != "")
+                        {
+                            try
+                            {
+                                ServerTransaction.CreateNewGroup(newGroupInfo.Name, newGroupInfo.Name, GUID, login, email);
+                                MessageBox.Show("Group \"" + newGroupInfo.Name + "\" created", "New group");
+                                UpdateGroupList();
+                            }
+                            catch (UnknownCommadError error)
+                            {
+                                MessageBox.Show(error.Message);
+                            }
+                            catch (ServerResponseError error)
+                            {
+                                MessageBox.Show(error.Message);
+                            }
+                            catch (AuthenticationError error)
+                            {
+                                MessageBox.Show(error.Message);
+                            }
+                        }
                     }
                 }
             }

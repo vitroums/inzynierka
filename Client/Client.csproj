@@ -46,10 +46,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Certificate.cs" />
+    <Compile Include="Certificates.cs" />
     <Compile Include="Errors\AuthenticationError.cs" />
     <Compile Include="DropboxApi.cs" />
     <Compile Include="Errors\ServerResponseError.cs" />
     <Compile Include="Rest.cs" />
+    <Compile Include="ServerData\GroupInfo.cs" />
+    <Compile Include="ServerData\UserCertificateInfo.cs" />
     <Compile Include="ServerTransaction.cs" />
     <Compile Include="Errors\UnknownCommandError.cs" />
     <Compile Include="SslClient.cs" />

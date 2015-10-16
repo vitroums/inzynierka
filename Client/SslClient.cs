@@ -6,6 +6,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Client.Errors;
 using System.Security.Authentication;
+using System.Threading.Tasks;
 
 namespace Client
 {
@@ -65,7 +66,8 @@ namespace Client
         {
             var buffer = Encoding.UTF8.GetBytes(message);
             SendStreamSize(message.Length);
-            _stream.Write(buffer, 0, buffer.Length);
+             _stream.Write(buffer, 0, buffer.Length);
+            Console.WriteLine("Sended: " + message);
         }
 
         public void SendFile(string path)
@@ -78,21 +80,22 @@ namespace Client
                 var bytesRead = reader.Read(buffer, 0, _bufferSize);
                 while (bytesRead != 0)
                 {
-                    _stream.Write(buffer, 0, bytesRead);
+                     _stream.Write(buffer, 0, bytesRead);
                     bytesRead = reader.Read(buffer, 0, _bufferSize);
                 }
             }
+            Console.WriteLine("Sended: " + path);
         }
 
         public string ReceiveString()
         {
             var buffer = new byte[_bufferSize];
-            long streamSize = ReceiveStreamSize();
+            long streamSize =  ReceiveStreamSize();
             long allBytes = 0;
             StringBuilder message = new StringBuilder();
             while (allBytes < streamSize)
             {
-                var bytesRead = _stream.Read(buffer, 0, _bufferSize);
+                var bytesRead =  _stream.Read(buffer, 0, _bufferSize);
                 message.Append(System.Text.Encoding.UTF8.GetString(buffer, 0, bytesRead));
                 allBytes += bytesRead;
             }
@@ -121,14 +124,15 @@ namespace Client
         private void SendStreamSize(long size)
         {
             var buffer = Encoding.UTF8.GetBytes(Convert.ToString(size, 2).PadLeft(64, '0'));
-            _stream.Write(buffer, 0, 64);
+             _stream.Write(buffer, 0, 64);
         }
 
         private long ReceiveStreamSize()
         {
             var buffer = new byte[64];
-            _stream.Read(buffer, 0, 64);
-            return Convert.ToInt64(System.Text.Encoding.UTF8.GetString(buffer, 0, 64), 2); ;
+             _stream.Read(buffer, 0, 64);
+            Console.WriteLine("Received: " + Convert.ToInt64(System.Text.Encoding.UTF8.GetString(buffer, 0, 64), 2));
+            return Convert.ToInt64(System.Text.Encoding.UTF8.GetString(buffer, 0, 64), 2);
         }
         #endregion
 

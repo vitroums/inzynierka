@@ -4,6 +4,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Client.Errors;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Client
 {
@@ -19,21 +20,21 @@ namespace Client
             using (SslClient stream = new SslClient(ip, 12345))
             {
                 stream.SendString("new-user");
-                response = stream.ReceiveString();
+                response =  stream.ReceiveString();
                 if (response != "provide-user-name")
                 {
                     UnknownCommandError("provide-user-name", response);
                 }
                 stream.SendString("user-name");
                 stream.SendString(name);
-                response = stream.ReceiveString();
+                response =  stream.ReceiveString();
                 if (response != "provide-user-mail")
                 {
                     UnknownCommandError("provide-user-mail", response);
                 }
                 stream.SendString("user-mail");
                 stream.SendString(mail);
-                response = stream.ReceiveString();
+                response =  stream.ReceiveString();
                 if (response == "user-exists")
                 {
                     ServerResponseError(response);
@@ -44,21 +45,21 @@ namespace Client
                 }
                 stream.SendString("user-data");
                 stream.SendString(data);
-                response = stream.ReceiveString();
+                response =  stream.ReceiveString();
                 if (response != "provide-keys-password")
                 {
                     UnknownCommandError("provide-keys-password", response);
                 }
                 stream.SendString("keys-password");
                 stream.SendString(keysPassword);
-                response = stream.ReceiveString();
+                response =  stream.ReceiveString();
                 if (response != "provide-rescue-password")
                 {
                     UnknownCommandError("provide-rescue-password", response);
                 }
                 stream.SendString("rescue-password");
                 stream.SendString(rescuePassword);
-                response = stream.ReceiveString();
+                response =  stream.ReceiveString();
                 if (response == "problem-while-adding-user")
                 {
                     ServerResponseError(response);
@@ -67,18 +68,18 @@ namespace Client
                 {
                     UnknownCommandError("user-added", response);
                 }
-                response = stream.ReceiveString();
+                response =  stream.ReceiveString();
                 if (response != "certificate-file")
                 {
                     UnknownCommandError("certificate-file", response);
                 }
                 stream.ReceiveFile("certificate.pfx");
-                response = stream.ReceiveString();
+                response =  stream.ReceiveString();
                 if (response != "user-id")
                 {
                     UnknownCommandError("user-id", response);
                 }
-                id = stream.ReceiveString();
+                id =  stream.ReceiveString();
                 stream.SendString("everything-ok");
             }
 
@@ -89,28 +90,28 @@ namespace Client
         {
             string response;
             stream.SendString("login");
-            response = stream.ReceiveString();
+            response =  stream.ReceiveString();
             if (response != "provide-user-id")
             {
                 UnknownCommandError("provide-user-id", response);
             }
             stream.SendString("user-id");
             stream.SendString(id);
-            response = stream.ReceiveString();
+            response =  stream.ReceiveString();
             if (response != "provide-user-name")
             {
                 UnknownCommandError("provide-user-name", response);
             }
             stream.SendString("user-name");
             stream.SendString(login);
-            response = stream.ReceiveString();
+            response =  stream.ReceiveString();
             if (response != "provide-user-mail")
             {
                 UnknownCommandError("provide-user-mail", response);
             }
             stream.SendString("user-mail");
             stream.SendString(mail);
-            response = stream.ReceiveString();
+            response =  stream.ReceiveString();
             if (response == "user-doesnt-exist")
             {
                 AuthenticationError(response);
@@ -132,23 +133,23 @@ namespace Client
 
             using (SslClient stream = new SslClient(ip, 12345))
             {
-                Authenticate(stream, id, login, mail);
+                 Authenticate(stream, id, login, mail);
                 stream.SendString("new-group");
-                response = stream.ReceiveString();
+                response =  stream.ReceiveString();
                 if (response != "provide-group-name")
                 {
                     UnknownCommandError("provide-group-name", response);
                 }
                 stream.SendString("group-name");
                 stream.SendString(name);
-                response = stream.ReceiveString();
+                response =  stream.ReceiveString();
                 if (response != "provide-group-password")
                 {
                     UnknownCommandError("provide-group-password", response);
                 }
                 stream.SendString("group-password");
                 stream.SendString(password);
-                response = stream.ReceiveString();
+                response =  stream.ReceiveString();
                 if (response == "group-exists")
                 {
                     ServerResponseError(response);
