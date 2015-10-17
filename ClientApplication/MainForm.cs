@@ -231,6 +231,12 @@ namespace ClientApplication
         // choose cert
         private void ButtonChooseCertClick(object sender, EventArgs e)
         {
+            if(Connected)
+            {
+                Connected = false;
+                ConnectedToGroup = false;
+                ClearProperties();
+            }
             OpenFileDialog ofd = new OpenFileDialog();
             DialogResult result = ofd.ShowDialog();
             if (result == DialogResult.OK) // Test result.
@@ -312,6 +318,7 @@ namespace ClientApplication
             GUID = "";
             email = "";
             login = "";
+            listBox1.DataSource = null;
             listBox2.DataSource = null;
             listBox3.DataSource = null;
             choosenCert = "certificate.pfx";
