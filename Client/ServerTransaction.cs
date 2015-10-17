@@ -247,9 +247,9 @@ namespace Client
             }
         }
 
-        public static void DecryptFile(string inFile, string outFile, string rsaPrivateKeyPath)
+        public static void DecryptFile(string inFile, string outFile, RSACryptoServiceProvider rsaProvider)
         {
-            RSACryptoServiceProvider rsaPrivateKey = (RSACryptoServiceProvider)new X509Certificate2(rsaPrivateKeyPath).PrivateKey;
+            RSACryptoServiceProvider rsaPrivateKey = rsaProvider;
             // Create instance of AesManaged for
             // symetric decryption of the data.
             using (AesManaged aesManaged = new AesManaged())

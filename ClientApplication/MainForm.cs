@@ -12,6 +12,7 @@ using Client.Errors;
 using System.IO;
 using Microsoft.VisualBasic;
 using System.Security.Cryptography.X509Certificates;
+using System.Security.Cryptography;
 
 
 namespace ClientApplication
@@ -27,6 +28,7 @@ namespace ClientApplication
         bool Connected = false;
         bool ConnectedToGroup = false;
         string choosenCert = "certificate.pfx";
+        RSACryptoServiceProvider rsaProvider = null;
         
         
         public MainForm()
@@ -47,40 +49,54 @@ namespace ClientApplication
             {
                 if(ConnectedToGroup)
                 {
-                    User selectedUser = (User)listBox2.SelectedItem;
-                    OpenFileDialog ofd = new OpenFileDialog();
-                    DialogResult result = ofd.ShowDialog();
-                    if (result == DialogResult.OK)
+                    var selectedUsers = listBox2.SelectedItems;
+                    if (selectedUsers.Count > 0)
                     {
-                        string fPath = ofd.FileName;
-                        string fName = ofd.SafeFileName;
-                        if (!checkBox1.Checked)
+                        OpenFileDialog ofd = new OpenFileDialog();
+                        DialogResult result = ofd.ShowDialog();
+                        if (result == DialogResult.OK)
                         {
-                            dba.UploadFile(fPath, fName, selectedUser.guid);
-                            Console.WriteLine("Successfully uploaded: {0}", fName);
-                            if (selectedUser.nick == login)
-                            {
-                                listBox3.DataSource = dba.GetFilesList(GUID);
-                            }
-                        }
-                        else
-                        {
-                            // upload z szyfrowaniem
-                            StreamReader streamReader = new StreamReader(fPath);
-                            string fContent = streamReader.ReadToEnd();
-                            streamReader.Close();
+                            string fPath = ofd.FileName;
+                            string fName = ofd.SafeFileName;
 
-                            // TODO: pobranie publicznego selectedUser'a
-                            DropboxApi da = new DropboxApi();
-                            da.GetFile(selectedUser.guid + ".crt");
-                            var temp = Path.GetTempFileName();
-                            ServerTransaction.EncryptFile(fPath, temp, selectedUser.guid + ".crt");
-                            dba.UploadFile(temp, fName, selectedUser.guid);
-                            Console.WriteLine("Successfully uploaded");
-                        }
-                                     
+                            foreach (User u in selectedUsers)
+                            {
+                                User selectedUser = u;
+
+                                if (!checkBox1.Checked)
+                                {
+                                    dba.UploadFile(fPath, fName, selectedUser.guid);
+                                    Console.WriteLine("Successfully uploaded: {0}", fName);
+                                    if (selectedUser.nick == login)
+                                    {
+                                        listBox3.DataSource = dba.GetFilesList(GUID);
+                                    }
+                                }
+                                else
+                                {
+                                    // upload z szyfrowaniem
+                                    StreamReader streamReader = new StreamReader(fPath);
+                                    string fContent = streamReader.ReadToEnd();
+                                    streamReader.Close();
+
+                                    DropboxApi da = new DropboxApi();
+                                    da.GetFile(selectedUser.guid + ".crt");
+                                    var temp = Path.GetTempFileName();
+                                    ServerTransaction.EncryptFile(fPath, temp, selectedUser.guid + ".crt");
+                                    dba.UploadFile(temp, fName, selectedUser.guid);
+                                    Console.WriteLine("Successfully uploaded");
+                                    if (selectedUser.nick == login)
+                                    {
+                                        listBox3.DataSource = dba.GetFilesList(GUID);
+                                    }
+                                }
+                            }
+                        }                    
                     }
-                    
+                    else
+                    {
+                        Console.WriteLine("ERROR! Not selected user(s)");
+                    }
                 }
                 else
                 {
@@ -212,11 +228,6 @@ namespace ClientApplication
 
         }
 
-        void UpdateGroupList()
-        {
-            listBox1.DataSource = dba.GetGroupsNamesList();
-        }
-
         // choose cert
         private void ButtonChooseCertClick(object sender, EventArgs e)
         {
@@ -226,28 +237,10 @@ namespace ClientApplication
             {
                 choosenCert = ofd.FileName;
             }
-            Console.WriteLine("Choose certificate: {0}", ofd.FileName);           
+            Console.WriteLine("Choose certificate: {0}", ofd.FileName);
+            rsaProvider = (RSACryptoServiceProvider)new X509Certificate2(choosenCert).PrivateKey;
         }
-
-        private bool ValidateCertPools(string country, string state, string city, string organization, string unit, string email, string login)
-        {
-            if (country == "")
-                return false;
-            if (state == "")
-                return false;
-            if (city == "")
-                return false;
-            if (organization == "")
-                return false;
-            if (unit == "")
-                return false;
-            if (email == "")
-                return false;
-            if (login == "")
-                return false;
-            return true;
-        }
-
+       
         // download selected file
         private void button5_Click(object sender, EventArgs e)
         {
@@ -267,7 +260,7 @@ namespace ClientApplication
                         // download z deszyfrowaniem
                         dba.GetFile(selectedFile, GUID);
                         Console.WriteLine("Successfully download: {0}", selectedFile);
-                        ServerTransaction.DecryptFile(selectedFile, "decrypted.exe", choosenCert);
+                        ServerTransaction.DecryptFile(selectedFile, "decrypted.exe", rsaProvider);
                         Console.WriteLine("Successfully decrypted");
                     }
 
@@ -284,37 +277,16 @@ namespace ClientApplication
             }
         }
 
-        public List<X509Certificate2> GetCertificates()
-        {
-            Console.WriteLine("Getting certs..");
-            var store = new X509Store(StoreLocation.CurrentUser);
-            List<X509Certificate2> validCertList = new List<X509Certificate2>();
-
-            store.Open(OpenFlags.ReadOnly);
-
-            var certificates = store.Certificates;
-            foreach (var certificate in certificates)
-            {
-                string issuerName = certificate.GetIssuerName();
-                string[] pools = issuerName.Split(',');
-                foreach(string pool in pools)
-                {
-                    if (pool == " CN=PKI Cloud")
-                    {
-                        validCertList.Add(new X509Certificate2(certificate));
-                        break;
-                    }
-                }
-            }
-
-            store.Close();
-
-            return validCertList;
-        }
-
         // connect button
         private void button7_Click(object sender, EventArgs e)
         {
+            // jeżeli nie wybraliśmy cetyfikatu z pliku
+            if (rsaProvider == null)
+            {
+                X509Certificate2 selectedCertificate = (X509Certificate2)listBox4.SelectedItem;
+                rsaProvider = (RSACryptoServiceProvider)selectedCertificate.PrivateKey;
+            }
+
             SslClient stream = new SslClient("127.0.0.1", 12345);
 
             GUID = "debf63fe-6b72-11e5-9c5f-28d244eb956f";
@@ -344,6 +316,59 @@ namespace ClientApplication
             listBox3.DataSource = null;
             choosenCert = "certificate.pfx";
         }
+
+        void UpdateGroupList()
+        {
+            listBox1.DataSource = dba.GetGroupsNamesList();
+        }
+
+        public List<X509Certificate2> GetCertificates()
+        {
+            Console.WriteLine("Getting certs..");
+            var store = new X509Store(StoreLocation.CurrentUser);
+            List<X509Certificate2> validCertList = new List<X509Certificate2>();
+
+            store.Open(OpenFlags.ReadOnly);
+
+            var certificates = store.Certificates;
+            foreach (var certificate in certificates)
+            {
+                string issuerName = certificate.GetIssuerName();
+                string[] pools = issuerName.Split(',');
+                foreach (string pool in pools)
+                {
+                    if (pool == " CN=PKI Cloud")
+                    {
+                        validCertList.Add(new X509Certificate2(certificate));
+                        break;
+                    }
+                }
+            }
+
+            store.Close();
+
+            return validCertList;
+        }
+
+        private bool ValidateCertPools(string country, string state, string city, string organization, string unit, string email, string login)
+        {
+            if (country == "")
+                return false;
+            if (state == "")
+                return false;
+            if (city == "")
+                return false;
+            if (organization == "")
+                return false;
+            if (unit == "")
+                return false;
+            if (email == "")
+                return false;
+            if (login == "")
+                return false;
+            return true;
+        }
+
     }
 
 
