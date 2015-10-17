@@ -35,6 +35,7 @@ namespace ClientApplication
             // output do textBox'a i konsoli
             Console.SetOut(new MultiTextWriter(new ControlWriter(textBox1), Console.Out));
             listBox4.DataSource = GetCertificates();
+            textBox1.ScrollToCaret();
             // output tylko do textbox'a       
             //Console.SetOut(new ControlWriter(textBox1));   
             
@@ -103,6 +104,10 @@ namespace ClientApplication
                     var newUserInfo = newUserForm.NewUserInfo;
                     try
                     {
+                        if (Connected)
+                        {
+                            ClearProperties();
+                        }
                         GUID = ServerTransaction.CreateNewUser(newUserInfo.CommonName, newUserInfo.Email, newUserInfo.ToString(), "1234", "123456");
                         MessageBox.Show("Welcome, your ID: " + GUID, "New user");
                         Console.WriteLine("Connected as: \n {0}", GUID);
@@ -221,27 +226,7 @@ namespace ClientApplication
             {
                 choosenCert = ofd.FileName;
             }
-            Console.WriteLine("Choose certificate: {0}", ofd.FileName);
-
-
-            //SslClient stream = new SslClient("127.0.0.1", 12345);
-
-            //GUID = "debf63fe-6b72-11e5-9c5f-28d244eb956f";
-            //email = "1234";
-            //login = "12345";
-            //if (ServerTransaction.Authenticate(stream, GUID, login, email))
-            //    {
-            //        Console.WriteLine("Authenticated");
-            //        Connected = true;
-            //        UpdateGroupList();
-            //        textBox4.Text = login;
-            //    }
-            //    else
-            //    {
-            //        Console.WriteLine("Failed");
-            //        Connected = false;
-            //    }
-            
+            Console.WriteLine("Choose certificate: {0}", ofd.FileName);           
         }
 
         private bool ValidateCertPools(string country, string state, string city, string organization, string unit, string email, string login)
@@ -330,7 +315,34 @@ namespace ClientApplication
         // connect button
         private void button7_Click(object sender, EventArgs e)
         {
+            SslClient stream = new SslClient("127.0.0.1", 12345);
 
+            GUID = "debf63fe-6b72-11e5-9c5f-28d244eb956f";
+            email = "1234";
+            login = "12345";
+            if (ServerTransaction.Authenticate(stream, GUID, login, email))
+            {
+                Console.WriteLine("Authenticated");
+                Connected = true;
+                UpdateGroupList();
+                textBox4.Text = login;
+            }
+            else
+            {
+                Console.WriteLine("Failed");
+                Connected = false;
+            }
+        }
+
+        public void ClearProperties()
+        {
+            dba = new DropboxApi();
+            GUID = "";
+            email = "";
+            login = "";
+            listBox2.DataSource = null;
+            listBox3.DataSource = null;
+            choosenCert = "certificate.pfx";
         }
     }
 

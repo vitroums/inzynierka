@@ -111,7 +111,7 @@ class ClientServerHandler(ServerHandlerHelper):
                     if user.mail == mail and user.nick == name and user.guid == uuid:
                         return True
                 else:
-                    if user.mail == mail and user.nick == name:
+                    if user.mail == mail or user.nick == name:
                         return True
         return False
 
