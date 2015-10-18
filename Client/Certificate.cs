@@ -12,7 +12,23 @@ namespace Client
 
         public override string ToString()
         {
-            return GetNameInfo(X509NameType.SimpleName, false);
+            return GetNameInfo(X509NameType.SimpleName, false).Split(';')[0];
+        }
+
+        public string ID
+        {
+            get
+            {
+                return GetNameInfo(X509NameType.SimpleName, false).Split(';')[1];
+            }
+        }
+
+        public string Email
+        {
+            get
+            {
+                return GetNameInfo(X509NameType.EmailName, false);
+            }
         }
     }
 }

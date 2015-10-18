@@ -28,277 +28,313 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.listBox1 = new System.Windows.Forms.ListBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.listBox2 = new System.Windows.Forms.ListBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.button2 = new System.Windows.Forms.Button();
-            this.button3 = new System.Windows.Forms.Button();
-            this.button4 = new System.Windows.Forms.Button();
-            this.button1 = new System.Windows.Forms.Button();
-            this.listBox3 = new System.Windows.Forms.ListBox();
-            this.label4 = new System.Windows.Forms.Label();
-            this.button5 = new System.Windows.Forms.Button();
-            this.button6 = new System.Windows.Forms.Button();
-            this.textBox3 = new System.Windows.Forms.TextBox();
-            this.label5 = new System.Windows.Forms.Label();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
-            this.label6 = new System.Windows.Forms.Label();
-            this.textBox4 = new System.Windows.Forms.TextBox();
-            this.button7 = new System.Windows.Forms.Button();
-            this.listBox4 = new System.Windows.Forms.ListBox();
+            this.groupsListBox = new System.Windows.Forms.ListBox();
+            this.groupsHeaderLabel = new System.Windows.Forms.Label();
+            this.identitiesHeaderLabel = new System.Windows.Forms.Label();
+            this.usersListBox = new System.Windows.Forms.ListBox();
+            this.usersHeaderLabel = new System.Windows.Forms.Label();
+            this.connectToGroupButton = new System.Windows.Forms.Button();
+            this.newUserButton = new System.Windows.Forms.Button();
+            this.loadFromFileButton = new System.Windows.Forms.Button();
+            this.sendFilesButton = new System.Windows.Forms.Button();
+            this.filesListBox = new System.Windows.Forms.ListBox();
+            this.myFileslabel = new System.Windows.Forms.Label();
+            this.downloadFilesButton = new System.Windows.Forms.Button();
+            this.newGroupButton = new System.Windows.Forms.Button();
+            this.encryptCheckBox = new System.Windows.Forms.CheckBox();
+            this.connectButton = new System.Windows.Forms.Button();
+            this.identitiesListBox = new System.Windows.Forms.ListBox();
+            this.identityPanel = new System.Windows.Forms.Panel();
+            this.groupsPanel = new System.Windows.Forms.Panel();
+            this.usersPanel = new System.Windows.Forms.Panel();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.loginLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.filesPanel = new System.Windows.Forms.Panel();
+            this.identityPanel.SuspendLayout();
+            this.groupsPanel.SuspendLayout();
+            this.usersPanel.SuspendLayout();
+            this.statusStrip1.SuspendLayout();
+            this.filesPanel.SuspendLayout();
             this.SuspendLayout();
             // 
-            // textBox1
+            // groupsListBox
             // 
-            this.textBox1.Location = new System.Drawing.Point(320, 9);
-            this.textBox1.Multiline = true;
-            this.textBox1.Name = "textBox1";
-            this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBox1.Size = new System.Drawing.Size(283, 422);
-            this.textBox1.TabIndex = 1;
+            this.groupsListBox.FormattingEnabled = true;
+            this.groupsListBox.Location = new System.Drawing.Point(6, 19);
+            this.groupsListBox.Name = "groupsListBox";
+            this.groupsListBox.Size = new System.Drawing.Size(189, 147);
+            this.groupsListBox.TabIndex = 0;
             // 
-            // listBox1
+            // groupsHeaderLabel
             // 
-            this.listBox1.FormattingEnabled = true;
-            this.listBox1.Location = new System.Drawing.Point(8, 143);
-            this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(120, 108);
-            this.listBox1.TabIndex = 0;
+            this.groupsHeaderLabel.AutoSize = true;
+            this.groupsHeaderLabel.Cursor = System.Windows.Forms.Cursors.Default;
+            this.groupsHeaderLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.groupsHeaderLabel.Location = new System.Drawing.Point(3, 0);
+            this.groupsHeaderLabel.Name = "groupsHeaderLabel";
+            this.groupsHeaderLabel.Size = new System.Drawing.Size(58, 16);
+            this.groupsHeaderLabel.TabIndex = 2;
+            this.groupsHeaderLabel.Text = "Groups";
             // 
-            // label1
+            // identitiesHeaderLabel
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 127);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(41, 13);
-            this.label1.TabIndex = 2;
-            this.label1.Text = "Groups";
+            this.identitiesHeaderLabel.AutoSize = true;
+            this.identitiesHeaderLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.identitiesHeaderLabel.Location = new System.Drawing.Point(3, 0);
+            this.identitiesHeaderLabel.Name = "identitiesHeaderLabel";
+            this.identitiesHeaderLabel.Size = new System.Drawing.Size(61, 17);
+            this.identitiesHeaderLabel.TabIndex = 3;
+            this.identitiesHeaderLabel.Text = "Identity";
             // 
-            // label2
+            // usersListBox
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(8, 29);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(57, 13);
-            this.label2.TabIndex = 3;
-            this.label2.Text = "Certificate:";
+            this.usersListBox.FormattingEnabled = true;
+            this.usersListBox.Location = new System.Drawing.Point(6, 20);
+            this.usersListBox.Name = "usersListBox";
+            this.usersListBox.SelectionMode = System.Windows.Forms.SelectionMode.MultiSimple;
+            this.usersListBox.Size = new System.Drawing.Size(189, 147);
+            this.usersListBox.TabIndex = 5;
             // 
-            // listBox2
+            // usersHeaderLabel
             // 
-            this.listBox2.FormattingEnabled = true;
-            this.listBox2.Location = new System.Drawing.Point(8, 277);
-            this.listBox2.Name = "listBox2";
-            this.listBox2.SelectionMode = System.Windows.Forms.SelectionMode.MultiSimple;
-            this.listBox2.Size = new System.Drawing.Size(120, 95);
-            this.listBox2.TabIndex = 5;
+            this.usersHeaderLabel.AutoSize = true;
+            this.usersHeaderLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.usersHeaderLabel.Location = new System.Drawing.Point(3, 0);
+            this.usersHeaderLabel.Name = "usersHeaderLabel";
+            this.usersHeaderLabel.Size = new System.Drawing.Size(50, 17);
+            this.usersHeaderLabel.TabIndex = 6;
+            this.usersHeaderLabel.Text = "Users";
             // 
-            // label3
+            // connectToGroupButton
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(8, 263);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(34, 13);
-            this.label3.TabIndex = 6;
-            this.label3.Text = "Users";
+            this.connectToGroupButton.Location = new System.Drawing.Point(201, 48);
+            this.connectToGroupButton.Name = "connectToGroupButton";
+            this.connectToGroupButton.Size = new System.Drawing.Size(99, 23);
+            this.connectToGroupButton.TabIndex = 8;
+            this.connectToGroupButton.Text = "Connect to group";
+            this.connectToGroupButton.UseVisualStyleBackColor = true;
+            this.connectToGroupButton.Click += new System.EventHandler(this.connectToGroupButton_Click);
             // 
-            // button2
+            // newUserButton
             // 
-            this.button2.Location = new System.Drawing.Point(134, 143);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(99, 23);
-            this.button2.TabIndex = 8;
-            this.button2.Text = "Connect to group";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.ButtonConnectToGroupClick);
+            this.newUserButton.Location = new System.Drawing.Point(87, 108);
+            this.newUserButton.Name = "newUserButton";
+            this.newUserButton.Size = new System.Drawing.Size(75, 23);
+            this.newUserButton.TabIndex = 9;
+            this.newUserButton.Text = "New user";
+            this.newUserButton.UseVisualStyleBackColor = true;
+            this.newUserButton.Click += new System.EventHandler(this.newUserButton_Click);
             // 
-            // button3
+            // loadFromFileButton
             // 
-            this.button3.Location = new System.Drawing.Point(101, 98);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(75, 23);
-            this.button3.TabIndex = 9;
-            this.button3.Text = "New user";
-            this.button3.UseVisualStyleBackColor = true;
-            this.button3.Click += new System.EventHandler(this.ButtonNewUserClick);
+            this.loadFromFileButton.Location = new System.Drawing.Point(168, 108);
+            this.loadFromFileButton.Name = "loadFromFileButton";
+            this.loadFromFileButton.Size = new System.Drawing.Size(132, 23);
+            this.loadFromFileButton.TabIndex = 10;
+            this.loadFromFileButton.Text = "Load certificate from file";
+            this.loadFromFileButton.UseVisualStyleBackColor = true;
+            this.loadFromFileButton.Click += new System.EventHandler(this.loadFromFileButton_Click);
             // 
-            // button4
+            // sendFilesButton
             // 
-            this.button4.Location = new System.Drawing.Point(179, 98);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(132, 23);
-            this.button4.TabIndex = 10;
-            this.button4.Text = "Load certificate from file";
-            this.button4.UseVisualStyleBackColor = true;
-            this.button4.Click += new System.EventHandler(this.ButtonChooseCertClick);
+            this.sendFilesButton.Location = new System.Drawing.Point(201, 20);
+            this.sendFilesButton.Name = "sendFilesButton";
+            this.sendFilesButton.Size = new System.Drawing.Size(99, 147);
+            this.sendFilesButton.TabIndex = 11;
+            this.sendFilesButton.Text = "Send files to selected users";
+            this.sendFilesButton.UseVisualStyleBackColor = true;
+            this.sendFilesButton.Click += new System.EventHandler(this.sendFilesButton_Click);
             // 
-            // button1
+            // filesListBox
             // 
-            this.button1.Location = new System.Drawing.Point(8, 378);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(120, 53);
-            this.button1.TabIndex = 11;
-            this.button1.Text = "Send file to selected user";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.filesListBox.FormattingEnabled = true;
+            this.filesListBox.Location = new System.Drawing.Point(6, 20);
+            this.filesListBox.Name = "filesListBox";
+            this.filesListBox.Size = new System.Drawing.Size(294, 381);
+            this.filesListBox.TabIndex = 12;
             // 
-            // listBox3
+            // myFileslabel
             // 
-            this.listBox3.FormattingEnabled = true;
-            this.listBox3.Location = new System.Drawing.Point(134, 277);
-            this.listBox3.Name = "listBox3";
-            this.listBox3.Size = new System.Drawing.Size(180, 95);
-            this.listBox3.TabIndex = 12;
+            this.myFileslabel.AutoSize = true;
+            this.myFileslabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.myFileslabel.Location = new System.Drawing.Point(3, 0);
+            this.myFileslabel.Name = "myFileslabel";
+            this.myFileslabel.Size = new System.Drawing.Size(63, 17);
+            this.myFileslabel.TabIndex = 13;
+            this.myFileslabel.Text = "My files";
             // 
-            // label4
+            // downloadFilesButton
             // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(134, 263);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(42, 13);
-            this.label4.TabIndex = 13;
-            this.label4.Text = "My files";
+            this.downloadFilesButton.Location = new System.Drawing.Point(6, 436);
+            this.downloadFilesButton.Name = "downloadFilesButton";
+            this.downloadFilesButton.Size = new System.Drawing.Size(294, 53);
+            this.downloadFilesButton.TabIndex = 14;
+            this.downloadFilesButton.Text = "Download selected files";
+            this.downloadFilesButton.UseVisualStyleBackColor = true;
+            this.downloadFilesButton.Click += new System.EventHandler(this.downloadFilesButton_Click);
             // 
-            // button5
+            // newGroupButton
             // 
-            this.button5.Location = new System.Drawing.Point(134, 378);
-            this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(180, 53);
-            this.button5.TabIndex = 14;
-            this.button5.Text = "Download selected file";
-            this.button5.UseVisualStyleBackColor = true;
-            this.button5.Click += new System.EventHandler(this.button5_Click);
+            this.newGroupButton.Location = new System.Drawing.Point(201, 19);
+            this.newGroupButton.Name = "newGroupButton";
+            this.newGroupButton.Size = new System.Drawing.Size(99, 23);
+            this.newGroupButton.TabIndex = 15;
+            this.newGroupButton.Text = "New group";
+            this.newGroupButton.UseVisualStyleBackColor = true;
+            this.newGroupButton.Click += new System.EventHandler(this.newGroupButton_Click);
             // 
-            // button6
+            // encryptCheckBox
             // 
-            this.button6.Location = new System.Drawing.Point(239, 143);
-            this.button6.Name = "button6";
-            this.button6.Size = new System.Drawing.Size(75, 23);
-            this.button6.TabIndex = 15;
-            this.button6.Text = "New group";
-            this.button6.UseVisualStyleBackColor = true;
-            this.button6.Click += new System.EventHandler(this.ButtonNewGroupClick);
+            this.encryptCheckBox.AutoSize = true;
+            this.encryptCheckBox.Checked = true;
+            this.encryptCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.encryptCheckBox.Location = new System.Drawing.Point(6, 413);
+            this.encryptCheckBox.Name = "encryptCheckBox";
+            this.encryptCheckBox.Size = new System.Drawing.Size(104, 17);
+            this.encryptCheckBox.TabIndex = 18;
+            this.encryptCheckBox.Text = "En(de)crypt data";
+            this.encryptCheckBox.UseVisualStyleBackColor = true;
             // 
-            // textBox3
+            // connectButton
             // 
-            this.textBox3.Location = new System.Drawing.Point(134, 194);
-            this.textBox3.Name = "textBox3";
-            this.textBox3.PasswordChar = '*';
-            this.textBox3.Size = new System.Drawing.Size(177, 20);
-            this.textBox3.TabIndex = 16;
+            this.connectButton.Location = new System.Drawing.Point(6, 108);
+            this.connectButton.Name = "connectButton";
+            this.connectButton.Size = new System.Drawing.Size(75, 23);
+            this.connectButton.TabIndex = 21;
+            this.connectButton.Text = "Connect";
+            this.connectButton.UseVisualStyleBackColor = true;
+            this.connectButton.Click += new System.EventHandler(this.connectButton_Click);
             // 
-            // label5
+            // identitiesListBox
             // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(135, 173);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(53, 13);
-            this.label5.TabIndex = 17;
-            this.label5.Text = "Password";
+            this.identitiesListBox.FormattingEnabled = true;
+            this.identitiesListBox.Location = new System.Drawing.Point(6, 20);
+            this.identitiesListBox.Name = "identitiesListBox";
+            this.identitiesListBox.Size = new System.Drawing.Size(294, 82);
+            this.identitiesListBox.TabIndex = 22;
+            this.identitiesListBox.SelectedIndexChanged += new System.EventHandler(this.identitiesListBox_SelectedIndexChanged);
             // 
-            // checkBox1
+            // identityPanel
             // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(210, 254);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(104, 17);
-            this.checkBox1.TabIndex = 18;
-            this.checkBox1.Text = "En(de)crypt data";
-            this.checkBox1.UseVisualStyleBackColor = true;
+            this.identityPanel.Controls.Add(this.identitiesListBox);
+            this.identityPanel.Controls.Add(this.connectButton);
+            this.identityPanel.Controls.Add(this.identitiesHeaderLabel);
+            this.identityPanel.Controls.Add(this.loadFromFileButton);
+            this.identityPanel.Controls.Add(this.newUserButton);
+            this.identityPanel.Location = new System.Drawing.Point(12, 12);
+            this.identityPanel.Name = "identityPanel";
+            this.identityPanel.Size = new System.Drawing.Size(306, 137);
+            this.identityPanel.TabIndex = 23;
             // 
-            // label6
+            // groupsPanel
             // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(12, 9);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(36, 13);
-            this.label6.TabIndex = 19;
-            this.label6.Text = "Login:";
+            this.groupsPanel.Controls.Add(this.groupsHeaderLabel);
+            this.groupsPanel.Controls.Add(this.groupsListBox);
+            this.groupsPanel.Controls.Add(this.newGroupButton);
+            this.groupsPanel.Controls.Add(this.connectToGroupButton);
+            this.groupsPanel.Location = new System.Drawing.Point(12, 155);
+            this.groupsPanel.Name = "groupsPanel";
+            this.groupsPanel.Size = new System.Drawing.Size(306, 173);
+            this.groupsPanel.TabIndex = 24;
             // 
-            // textBox4
+            // usersPanel
             // 
-            this.textBox4.Enabled = false;
-            this.textBox4.Location = new System.Drawing.Point(69, 9);
-            this.textBox4.Name = "textBox4";
-            this.textBox4.Size = new System.Drawing.Size(245, 20);
-            this.textBox4.TabIndex = 20;
+            this.usersPanel.Controls.Add(this.usersHeaderLabel);
+            this.usersPanel.Controls.Add(this.usersListBox);
+            this.usersPanel.Controls.Add(this.sendFilesButton);
+            this.usersPanel.Location = new System.Drawing.Point(12, 334);
+            this.usersPanel.Name = "usersPanel";
+            this.usersPanel.Size = new System.Drawing.Size(306, 173);
+            this.usersPanel.TabIndex = 25;
             // 
-            // button7
+            // statusStrip1
             // 
-            this.button7.Location = new System.Drawing.Point(11, 98);
-            this.button7.Name = "button7";
-            this.button7.Size = new System.Drawing.Size(75, 23);
-            this.button7.TabIndex = 21;
-            this.button7.Text = "Connect";
-            this.button7.UseVisualStyleBackColor = true;
-            this.button7.Click += new System.EventHandler(this.button7_Click);
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripStatusLabel1,
+            this.loginLabel});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 519);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(641, 22);
+            this.statusStrip1.TabIndex = 26;
+            this.statusStrip1.Text = "statusStrip1";
             // 
-            // listBox4
+            // toolStripStatusLabel1
             // 
-            this.listBox4.FormattingEnabled = true;
-            this.listBox4.Location = new System.Drawing.Point(69, 29);
-            this.listBox4.Name = "listBox4";
-            this.listBox4.Size = new System.Drawing.Size(245, 43);
-            this.listBox4.TabIndex = 22;
+            this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(82, 17);
+            this.toolStripStatusLabel1.Text = "Connected as:";
+            // 
+            // loginLabel
+            // 
+            this.loginLabel.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.loginLabel.Name = "loginLabel";
+            this.loginLabel.Size = new System.Drawing.Size(82, 17);
+            this.loginLabel.Text = "Unconnected";
+            // 
+            // filesPanel
+            // 
+            this.filesPanel.Controls.Add(this.myFileslabel);
+            this.filesPanel.Controls.Add(this.filesListBox);
+            this.filesPanel.Controls.Add(this.downloadFilesButton);
+            this.filesPanel.Controls.Add(this.encryptCheckBox);
+            this.filesPanel.Location = new System.Drawing.Point(324, 12);
+            this.filesPanel.Name = "filesPanel";
+            this.filesPanel.Size = new System.Drawing.Size(306, 495);
+            this.filesPanel.TabIndex = 27;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(627, 437);
-            this.Controls.Add(this.listBox4);
-            this.Controls.Add(this.button7);
-            this.Controls.Add(this.textBox4);
-            this.Controls.Add(this.label6);
-            this.Controls.Add(this.checkBox1);
-            this.Controls.Add(this.label5);
-            this.Controls.Add(this.textBox3);
-            this.Controls.Add(this.button6);
-            this.Controls.Add(this.button5);
-            this.Controls.Add(this.label4);
-            this.Controls.Add(this.listBox3);
-            this.Controls.Add(this.button1);
-            this.Controls.Add(this.button4);
-            this.Controls.Add(this.button3);
-            this.Controls.Add(this.button2);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.listBox2);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.textBox1);
-            this.Controls.Add(this.listBox1);
+            this.ClientSize = new System.Drawing.Size(641, 541);
+            this.Controls.Add(this.filesPanel);
+            this.Controls.Add(this.statusStrip1);
+            this.Controls.Add(this.usersPanel);
+            this.Controls.Add(this.groupsPanel);
+            this.Controls.Add(this.identityPanel);
+            this.MaximizeBox = false;
             this.Name = "MainForm";
             this.Text = "CloudPKI";
+            this.identityPanel.ResumeLayout(false);
+            this.identityPanel.PerformLayout();
+            this.groupsPanel.ResumeLayout(false);
+            this.groupsPanel.PerformLayout();
+            this.usersPanel.ResumeLayout(false);
+            this.usersPanel.PerformLayout();
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
+            this.filesPanel.ResumeLayout(false);
+            this.filesPanel.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
         }
 
         #endregion
-
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.ListBox listBox1;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.ListBox listBox2;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Button button3;
-        private System.Windows.Forms.Button button4;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.ListBox listBox3;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Button button5;
-        private System.Windows.Forms.Button button6;
-        private System.Windows.Forms.TextBox textBox3;
-        private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.CheckBox checkBox1;
-        private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.TextBox textBox4;
-        private System.Windows.Forms.Button button7;
-        private System.Windows.Forms.ListBox listBox4;
+        private System.Windows.Forms.ListBox groupsListBox;
+        private System.Windows.Forms.Label groupsHeaderLabel;
+        private System.Windows.Forms.Label identitiesHeaderLabel;
+        private System.Windows.Forms.ListBox usersListBox;
+        private System.Windows.Forms.Button connectToGroupButton;
+        private System.Windows.Forms.Button newUserButton;
+        private System.Windows.Forms.Button loadFromFileButton;
+        private System.Windows.Forms.Button sendFilesButton;
+        private System.Windows.Forms.ListBox filesListBox;
+        private System.Windows.Forms.Label myFileslabel;
+        private System.Windows.Forms.Button downloadFilesButton;
+        private System.Windows.Forms.Button newGroupButton;
+        private System.Windows.Forms.CheckBox encryptCheckBox;
+        private System.Windows.Forms.Button connectButton;
+        private System.Windows.Forms.ListBox identitiesListBox;
+        private System.Windows.Forms.Label usersHeaderLabel;
+        private System.Windows.Forms.Panel identityPanel;
+        private System.Windows.Forms.Panel groupsPanel;
+        private System.Windows.Forms.Panel usersPanel;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
+        private System.Windows.Forms.ToolStripStatusLabel loginLabel;
+        private System.Windows.Forms.Panel filesPanel;
     }
 }
 

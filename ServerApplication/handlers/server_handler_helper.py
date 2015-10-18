@@ -85,6 +85,5 @@ class ServerHandlerHelper(BaseRequestHandler):
         """
         Wysyła rozmiar następnej wiadomości
         """
-        print(size)
         size = bin(size).replace("b", "0").zfill(64).encode(self._configuration.encoding)
         self.request.sendall(size)

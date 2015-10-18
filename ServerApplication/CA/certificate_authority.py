@@ -132,18 +132,13 @@ class CertificateAuthority(object):
             certificate.sign(keys, self.__configuration.signMethod)
             self.__saveCertificate(self.__configuration.certificateFile, certificate)
             self.__saveKeys(self.__configuration.keysFile, keys, self.__configuration.caPassword)
-            p12 = crypto.PKCS12()
-            p12.set_certificate(certificate)
-            p12.set_privatekey(keys)
-            p12.set_friendlyname("test".encode())
-            open("test.pfx", "wb").write(p12.export())
             return certificate, keys
         except ValueError:
             print("CA's informations corrupted")
         except IOError:
             print("Problem with saving files")
  
-    def __generateCertificate(self, informations):
+    def __generateCertificate(self, informations, uuid=None, email=None):
         """
         Generuje certyfikat na podstawie podanych informacji.
 
@@ -166,7 +161,13 @@ class CertificateAuthority(object):
         certificate.get_subject().L = informations["city"]
         certificate.get_subject().O = informations["organization"]
         certificate.get_subject().OU = informations["unit"]
-        certificate.get_subject().CN = informations["name"]
+        if uuid:
+            commonName = ";".join([informations["name"], uuid])
+        else:
+            commonName = informations["name"];
+        certificate.get_subject().CN = commonName
+        if email:
+            certificate.get_subject().emailAddress = email
         certificate.set_serial_number(1000)
         certificate.gmtime_adj_notBefore(self.__configuration.notBefore)
         certificate.gmtime_adj_notAfter(self.__configuration.notAfter)
@@ -236,7 +237,7 @@ class CertificateAuthority(object):
         """
         return self.__saveFile(path, crypto.dump_privatekey(crypto.FILETYPE_PEM, key, None, password.encode(self.__configuration.encoding)))
 
-    def newCertificate(self, informations, password, name):
+    def newCertificate(self, informations, password, name, email):
         """
         Tworzy nowy certyfikat wraz z parą kluczy.
 
@@ -246,6 +247,7 @@ class CertificateAuthority(object):
                     country, state, city, organization, unit, name
             password (str): Hasło chroniące klucz prywatny.
             name (str): Nazwa plików, do których zapisane zostaną dane.
+            email (str): Adres e-mail użytkownika.
 
         Return:
             str, str: Ścieżka do pliku certyfikatu, ścieżka do pliku klucza
@@ -254,7 +256,7 @@ class CertificateAuthority(object):
             ValueError: Jeśli informacje nie zawierają wszystkich kluczy
             IOError: Jeśli wystąpiły problemy z zapisem plików
         """
-        certificate = self.__generateCertificate(informations)
+        certificate = self.__generateCertificate(informations, name, email)
         keys = self.__generateKeys()
         certificate.set_pubkey(keys)
         certificate = self.__signCertificate(certificate)
@@ -268,68 +270,3 @@ class CertificateAuthority(object):
         p12.set_privatekey(keys)
         open(".".join([name, "pfx"]), "wb").write(p12.export())
         return ".".join([name, "pfx"]), certificatePath
-    
-    def encryptStringWithPublicKey(self, message, certificateFile):
-        """
-        Szyfruje podaną wiadomość kluczem publicznym z certyfikatu.
-
-        Args:
-            message (str): Wiadomość do zaszyfrowania.
-            certificateFile (str): Ścieżka do pliku certyfikatu.
-
-        Return:
-            str: Zaszyfrowana kluczem publicznym wiadomość.
-        """
-        certificate = self.__loadCertificateFromFile(certificateFile)
-        publicKey = certificate.get_pubkey()
-        # TODO Szyfrowanie wiadomości
-
-
-        return message
-
-    def decryptStringWithPublicKey(self, chiper, certificateFile):
-        """
-        Odszyfrowuje podaną wiadomość kluczem publicznym z certyfikatu.
-
-        Args:
-            chiper (str): Zaszyfrowana wiadomość.
-            certificateFile (str): Ścieżka do pliku certyfikatu.
-        
-        Return:
-            str: Odszyfrowana wiadomość.
-        """
-        certificate = self.__loadCertificateFromFile(certificateFile)
-        publicKey = certificate.get_pubkey()
-        crypto.sign("key.pem", "omg", "gg")
-        # TODO Odszyfrowywanie wiadomości
-        return chiper
-    
-    def encryptStringWithPrivateKey(self, message, keysFile):
-        """
-        Szyfruje podaną wiadomość kluczem prywatnym.
-
-        Args:
-            message (str): Wiadomość do zaszyfrowania.
-            keysFile (str): Ścieżka do pliku kluczy.
-
-        Return:
-            str: Zaszyfrowana wiadomość.
-        """
-        keys = self.__loadPrivateKeyFromFile(keysFile)
-        # TODO Szyfrowanie wiadomości
-        return message
-
-    def decryptStringWithPrivateKey(self, chiper, keysFile):
-        """
-        Odszyfrowuje podaną wiadomość kluczem prywatnym.
-
-        Args:
-            chiper (str): Zaszyfrowana wiadomość.
-            keysFile (str): Ścieżka do pliku kluczy.
-
-        Return:
-            str: Odszyfrowana wiadomość.
-        """
-        keys = self.__loadPrivateKeyFromFile(keysFile)
-        # TODO Szyfrowanie wiadomości
-        return chiper

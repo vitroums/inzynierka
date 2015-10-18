@@ -40,6 +40,8 @@ class ClientServerHandler(ServerHandlerHelper):
                         self.__newGroupCommand(id, name, mail)
                     else:
                         self._sendString("unknown-command")        
+            elif command == "connect":
+                pass
             else:
                 self.__commandError(command)
         except ResponseError as error:
@@ -59,7 +61,7 @@ class ClientServerHandler(ServerHandlerHelper):
             return
         informations, keysPassword, rescuePassword = self.__requestUserInformations()
         uuid = str(uuid1())
-        keys, certificate = self.__ca.newCertificate(informations, keysPassword, uuid)
+        keys, certificate = self.__ca.newCertificate(informations, keysPassword, uuid, mail)
         if self.__addUserToCloud(name, mail, uuid, certificate):
             self._sendString("user-added")
             self.__sendNewUserFiles(keys, uuid)
@@ -190,6 +192,7 @@ class ClientServerHandler(ServerHandlerHelper):
         """
         self._sendString("certificate-file")
         self._sendFile(certificate)
+        os.remove(certificate)
         self._sendString("user-id")
         self._sendString(uuid)
         

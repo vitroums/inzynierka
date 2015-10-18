@@ -1,137 +1,91 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Client;
 using Client.Errors;
+using Client.ClientData;
 using System.IO;
-using Microsoft.VisualBasic;
-using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography;
-
+using System.Diagnostics;
 
 namespace ClientApplication
 {
     public partial class MainForm : Form
     {
-
-        DropboxApi dba = new DropboxApi();
-        SslClient sc;
-        string GUID = "";
-        string email = "";
-        string login = "";
-        bool Connected = false;
-        bool ConnectedToGroup = false;
-        string choosenCert = "certificate.pfx";
-        RSACryptoServiceProvider rsaProvider = null;
+        DropboxApi _cloud = new DropboxApi();
+        UserInfo _userInformation;
+        bool _connected = false;
+        bool _connectedToGroup = false;
+        Certificate _certificate = null;
+        BindingList<Certificate> _identitiesList;
+        string _certificatesPath = "D:\\Desktop\\";
         
         
         public MainForm()
         {
             InitializeComponent();
-            // output do textBox'a i konsoli
-            Console.SetOut(new MultiTextWriter(new ControlWriter(textBox1), Console.Out));
-            listBox4.DataSource = GetCertificates();
-            textBox1.ScrollToCaret();
-            // output tylko do textbox'a       
-            //Console.SetOut(new ControlWriter(textBox1));   
-            
+            ReloadButtonState();
+            _userInformation = new UserInfo();
+            _identitiesList = new BindingList<Certificate>(Certificates.GetCertificates());
+            identitiesListBox.DataSource = _identitiesList;            
         }
-        // send file to selected user
-        private void button1_Click(object sender, EventArgs e)
+
+        private void identitiesListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (Connected)
+            var identitiesList = sender as ListBox;
+            _certificate = identitiesList.SelectedItem as Certificate;
+        }
+
+        private void connectButton_Click(object sender, EventArgs e)
+        {
+            _connected = ServerTransaction.Connect(_certificate);
+            ReloadButtonState();
+            if (_connected)
             {
-                if(ConnectedToGroup)
-                {
-                    var selectedUsers = listBox2.SelectedItems;
-                    if (selectedUsers.Count > 0)
-                    {
-                        OpenFileDialog ofd = new OpenFileDialog();
-                        DialogResult result = ofd.ShowDialog();
-                        if (result == DialogResult.OK)
-                        {
-                            string fPath = ofd.FileName;
-                            string fName = ofd.SafeFileName;
-
-                            foreach (User u in selectedUsers)
-                            {
-                                User selectedUser = u;
-
-                                if (!checkBox1.Checked)
-                                {
-                                    dba.UploadFile(fPath, fName, selectedUser.guid);
-                                    Console.WriteLine("Successfully uploaded: {0}", fName);
-                                    if (selectedUser.nick == login)
-                                    {
-                                        listBox3.DataSource = dba.GetFilesList(GUID);
-                                    }
-                                }
-                                else
-                                {
-                                    // upload z szyfrowaniem
-                                    StreamReader streamReader = new StreamReader(fPath);
-                                    string fContent = streamReader.ReadToEnd();
-                                    streamReader.Close();
-
-                                    DropboxApi da = new DropboxApi();
-                                    da.GetFile(selectedUser.guid + ".crt");
-                                    var temp = Path.GetTempFileName();
-                                    ServerTransaction.EncryptFile(fPath, temp, selectedUser.guid + ".crt");
-                                    dba.UploadFile(temp, fName, selectedUser.guid);
-                                    Console.WriteLine("Successfully uploaded");
-                                    if (selectedUser.nick == login)
-                                    {
-                                        listBox3.DataSource = dba.GetFilesList(GUID);
-                                    }
-                                }
-                            }
-                        }                    
-                    }
-                    else
-                    {
-                        Console.WriteLine("ERROR! Not selected user(s)");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("ERROR! Not connected to the group");
-                }
-                
+                var login = _certificate.ToString();
+                loginLabel.Text = login;
+                var message = string.Format("Successfull logged as {0}", login);
+                MessageBox.Show(message, "Successful", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                UpdateGroupList();
+                _userInformation.ID = _certificate.ID;
+                _userInformation.Name = _certificate.ToString();
+                _userInformation.Email = _certificate.Email;
             }
             else
             {
-                Console.WriteLine("ERROR! Not connected to the server");
+                loginLabel.Text = "Unconnected";
+                MessageBox.Show("", "Login failed", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
         }
-        // new user
-        private void ButtonNewUserClick(object sender, EventArgs e)
+
+        private void newUserButton_Click(object sender, EventArgs e)
         {
             using (var newUserForm = new NewUserForm())
             {
-                newUserForm.ShowDialog();
-                if (newUserForm.DialogResult == DialogResult.OK)
+                if (newUserForm.ShowDialog() == DialogResult.OK)
                 {
                     var newUserInfo = newUserForm.NewUserInfo;
                     try
                     {
-                        if (Connected)
+                        if (_connected)
                         {
                             ClearProperties();
                         }
-                        GUID = ServerTransaction.CreateNewUser(newUserInfo.CommonName, newUserInfo.Email, newUserInfo.ToString(), "1234", "123456");
-                        MessageBox.Show("Welcome, your ID: " + GUID, "New user");
-                        Console.WriteLine("Connected as: \n {0}", GUID);
-                        Connected = true;
+                        _userInformation.ID = ServerTransaction.CreateNewUser(newUserInfo, "1234", "123456", _certificatesPath);
+                        _userInformation.Name = newUserInfo.CommonName;
+                        _userInformation.Email = newUserInfo.Email;
+                        var newCertificatePath = _certificatesPath + _userInformation.Name + ".pfx";
+                        Process addCertificateProcess = new Process();
+                        addCertificateProcess.EnableRaisingEvents = false;
+                        addCertificateProcess.StartInfo.FileName = newCertificatePath;
+                        addCertificateProcess.Start();
+                        _connected = true;
+                        ReloadButtonState();
+                        loginLabel.Text = _userInformation.Name;
+                        var message = string.Format("Welcome {0}.\nYour ID is {1}", _userInformation.Name, _userInformation.ID);
+                        MessageBox.Show(message, "New user", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         UpdateGroupList();
-                        textBox4.Text = login;
-                        login = newUserInfo.CommonName;
-                        email = newUserInfo.Email;
+                        _identitiesList.Add(new Certificate(newCertificatePath));
                     }
                     catch (UnknownCommadError error)
                     {
@@ -148,36 +102,125 @@ namespace ClientApplication
                 }
             }
         }
-        // new group
-        private void ButtonNewGroupClick(object sender, EventArgs e)
+
+        private void loadFromFileButton_Click(object sender, EventArgs e)
         {
-            if (Connected)
+            var openFileDialog = new OpenFileDialog()
             {
-                using (var newGroupForm = new NewGroupForm())
+                Filter = "Certificate (.pfx)|*.pfx",
+                Multiselect = true
+            };
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                foreach (var certificate in openFileDialog.FileNames)
                 {
-                    newGroupForm.ShowDialog();
+                    _identitiesList.Add(new Certificate(certificate));
+                }
+            }
+
+        }
+
+        private void newGroupButton_Click(object sender, EventArgs e)
+        {
+            using (var newGroupForm = new NewGroupForm())
+            {
+                if (newGroupForm.ShowDialog() == DialogResult.OK)
+                {
                     var newGroupInfo = newGroupForm.NewGroupInfo;
-                    if (newGroupForm.DialogResult == DialogResult.OK)
+                    try
                     {
-                        if (GUID != "" && login != "" && email != "")
+                        ServerTransaction.CreateNewGroup(newGroupInfo, _userInformation, _certificate);
+                        MessageBox.Show("Group \"" + newGroupInfo.Name + "\" created", "New group");
+                        UpdateGroupList();
+                    }
+                    catch (UnknownCommadError error)
+                    {
+                        MessageBox.Show(error.Message);
+                    }
+                    catch (ServerResponseError error)
+                    {
+                        MessageBox.Show(error.Message);
+                    }
+                    catch (AuthenticationError error)
+                    {
+                        MessageBox.Show(error.Message);
+                    }
+                }
+            }
+        }
+
+        private void connectToGroupButton_Click(object sender, EventArgs e)
+        {
+            if (_connected)
+            {
+                using (var passwordForm = new PasswordForm())
+                {
+                    passwordForm.ShowDialog();
+                    if (passwordForm.DialogResult == DialogResult.OK)
+                    {
+                        string password = passwordForm.Password;
+                        string selectedGroup = groupsListBox.SelectedItem.ToString();
+                        if (_cloud.ValidatePassword(password, selectedGroup))
                         {
-                            try
+                            _cloud = new DropboxApi(selectedGroup);
+                            var message = string.Format("You are now connected to gropup \"{0}\"", selectedGroup);
+                            MessageBox.Show(message, "Connection sucessfull", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            _cloud.LoadDatabase();
+                            usersListBox.DataSource = _cloud.AddUserIfNotExist(_userInformation);
+                            filesListBox.DataSource = _cloud.GetFilesList(_userInformation.ID);
+                            _connectedToGroup = true;
+                        }
+                        else
+                        {
+                            MessageBox.Show("Typed password is wrong", "Wrong password", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("You have to connect to server first", "Connect", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void sendFilesButton_Click(object sender, EventArgs e)
+        {
+            var selectedUsers = usersListBox.SelectedItems;
+            if (selectedUsers.Count > 0)
+            {
+                var openFileDialog = new OpenFileDialog();
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string filePath = openFileDialog.FileName;
+                    string fileName = openFileDialog.SafeFileName;
+
+                    foreach (UserInfo user in selectedUsers)
+                    {
+                        if (!encryptCheckBox.Checked)
+                        {
+                            _cloud.UploadFile(filePath, fileName, user.ID);
+                            Console.WriteLine("Successfully uploaded: {0}", fileName);
+                            if (user.Name == _userInformation.Name)
                             {
-                                ServerTransaction.CreateNewGroup(newGroupInfo.Name, newGroupInfo.Name, GUID, login, email);
-                                MessageBox.Show("Group \"" + newGroupInfo.Name + "\" created", "New group");
-                                UpdateGroupList();
+                                filesListBox.DataSource = _cloud.GetFilesList(_userInformation.ID);
                             }
-                            catch (UnknownCommadError error)
+                        }
+                        else
+                        {
+                            // upload z szyfrowaniem
+                            StreamReader streamReader = new StreamReader(filePath);
+                            string fContent = streamReader.ReadToEnd();
+                            streamReader.Close();
+
+                            DropboxApi da = new DropboxApi();
+                            da.GetFile(user.ID + ".crt");
+                            var temp = Path.GetTempFileName();
+                            ServerTransaction.EncryptFile(filePath, temp, user.ID + ".crt");
+                            _cloud.UploadFile(temp, fileName, user.ID);
+                            Console.WriteLine("Successfully uploaded");
+                            if (user.Name == _userInformation.Name)
                             {
-                                MessageBox.Show(error.Message);
-                            }
-                            catch (ServerResponseError error)
-                            {
-                                MessageBox.Show(error.Message);
-                            }
-                            catch (AuthenticationError error)
-                            {
-                                MessageBox.Show(error.Message);
+                                filesListBox.DataSource = _cloud.GetFilesList(_userInformation.ID);
                             }
                         }
                     }
@@ -185,263 +228,60 @@ namespace ClientApplication
             }
             else
             {
-                Console.WriteLine("ERROR! Not connected to the server");
+                MessageBox.Show("Select users first", "Select users", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
-            
         }
-        // connect to group
-        private void ButtonConnectToGroupClick(object sender, EventArgs e)
+
+        private void downloadFilesButton_Click(object sender, EventArgs e)
         {
-            if (Connected)
+            string selectedFile = (string)filesListBox.SelectedItem;
+            if (!encryptCheckBox.Checked)
             {
-                List<string> s = new List<string>();
-                listBox2.DataSource = s;
-                listBox3.DataSource = s;
-                string selectedGroup = listBox1.SelectedItem.ToString();
-                Console.WriteLine("Selected group: {0}", selectedGroup);
-                string password = textBox3.Text;
-                if (password != "")
-                {
-                    if (dba.ValidatePassword(password, selectedGroup))
-                    {
-                        dba = new DropboxApi(selectedGroup);
-                        Console.WriteLine("Successfully connected to {0} group!", selectedGroup);
-                        dba.LoadDatabase();
-                        listBox2.DataSource = dba.AddUserIfNotExist(GUID, email, login);
-                        listBox3.DataSource = dba.GetFilesList(GUID);
-                        ConnectedToGroup = true;
-                    }
-                    else
-                    {
-                        Console.WriteLine("Wrong password!");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Type a password!");
-                }
+                _cloud.GetFile(selectedFile, _userInformation.ID);
+                Console.WriteLine("Successfully download: {0}", selectedFile);
+
             }
             else
             {
-                Console.WriteLine("You have to connect to the server first!");
+                _cloud.GetFile(selectedFile, _userInformation.ID);
+                Console.WriteLine("Successfully download: {0}", selectedFile);
+                ServerTransaction.DecryptFile(selectedFile, "decrypted.exe", (RSACryptoServiceProvider)_certificate.PrivateKey);
+                Console.WriteLine("Successfully decrypted");
             }
-
         }
 
-        // choose cert
-        private void ButtonChooseCertClick(object sender, EventArgs e)
+        private void ReloadButtonState()
         {
-            if(Connected)
-            {
-                Connected = false;
-                ConnectedToGroup = false;
-                ClearProperties();
-            }
-            OpenFileDialog ofd = new OpenFileDialog();
-            DialogResult result = ofd.ShowDialog();
-            if (result == DialogResult.OK) // Test result.
-            {
-                choosenCert = ofd.FileName;
-            }
-            Console.WriteLine("Choose certificate: {0}", ofd.FileName);
-            rsaProvider = (RSACryptoServiceProvider)new X509Certificate2(choosenCert).PrivateKey;
+            newGroupButton.Enabled = _connected;
+            connectToGroupButton.Enabled = _connected;
+            sendFilesButton.Enabled = _connected && _connectedToGroup;
+            downloadFilesButton.Enabled = _connected && _connectedToGroup;
         }
+
+        private void ClearProperties()
+        {
+            _cloud = new DropboxApi();
+            _userInformation = new Client.ClientData.UserInfo();
+            groupsListBox.DataSource = null;
+            usersListBox.DataSource = null;
+            filesListBox.DataSource = null;
+        }
+
+        private void UpdateGroupList()
+        {
+            groupsListBox.DataSource = _cloud.GetGroupsNamesList();
+        }
+
+        
+
        
-        // download selected file
-        private void button5_Click(object sender, EventArgs e)
-        {
-            if (Connected)
-            {
-                if (ConnectedToGroup)
-                {
-                    string selectedFile = (string)listBox3.SelectedItem;
-                    if (!checkBox1.Checked)
-                    {
-                        dba.GetFile(selectedFile, GUID);
-                        Console.WriteLine("Successfully download: {0}", selectedFile);
 
-                    }
-                    else
-                    {
-                        // download z deszyfrowaniem
-                        dba.GetFile(selectedFile, GUID);
-                        Console.WriteLine("Successfully download: {0}", selectedFile);
-                        ServerTransaction.DecryptFile(selectedFile, "decrypted.exe", rsaProvider);
-                        Console.WriteLine("Successfully decrypted");
-                    }
+        
 
-                }
-                else
-                {
-                    Console.WriteLine("ERROR! Not connected to the group");
-                }
+        
 
-            }
-            else
-            {
-                Console.WriteLine("ERROR! Not connected to the server");
-            }
-        }
+        
 
-        // connect button
-        private void button7_Click(object sender, EventArgs e)
-        {
-            // jeżeli nie wybraliśmy cetyfikatu z pliku
-            if (rsaProvider == null)
-            {
-                X509Certificate2 selectedCertificate = (X509Certificate2)listBox4.SelectedItem;
-                rsaProvider = (RSACryptoServiceProvider)selectedCertificate.PrivateKey;
-            }
-
-            SslClient stream = new SslClient("127.0.0.1", 12345);
-
-            GUID = "debf63fe-6b72-11e5-9c5f-28d244eb956f";
-            email = "1234";
-            login = "12345";
-            if (ServerTransaction.Authenticate(stream, GUID, login, email))
-            {
-                Console.WriteLine("Authenticated");
-                Connected = true;
-                UpdateGroupList();
-                textBox4.Text = login;
-            }
-            else
-            {
-                Console.WriteLine("Failed");
-                Connected = false;
-            }
-        }
-
-        public void ClearProperties()
-        {
-            dba = new DropboxApi();
-            GUID = "";
-            email = "";
-            login = "";
-            listBox1.DataSource = null;
-            listBox2.DataSource = null;
-            listBox3.DataSource = null;
-            choosenCert = "certificate.pfx";
-        }
-
-        void UpdateGroupList()
-        {
-            listBox1.DataSource = dba.GetGroupsNamesList();
-        }
-
-        public List<X509Certificate2> GetCertificates()
-        {
-            Console.WriteLine("Getting certs..");
-            var store = new X509Store(StoreLocation.CurrentUser);
-            List<X509Certificate2> validCertList = new List<X509Certificate2>();
-
-            store.Open(OpenFlags.ReadOnly);
-
-            var certificates = store.Certificates;
-            foreach (var certificate in certificates)
-            {
-                string issuerName = certificate.GetIssuerName();
-                string[] pools = issuerName.Split(',');
-                foreach (string pool in pools)
-                {
-                    if (pool == " CN=PKI Cloud")
-                    {
-                        validCertList.Add(new X509Certificate2(certificate));
-                        break;
-                    }
-                }
-            }
-
-            store.Close();
-
-            return validCertList;
-        }
-
-        private bool ValidateCertPools(string country, string state, string city, string organization, string unit, string email, string login)
-        {
-            if (country == "")
-                return false;
-            if (state == "")
-                return false;
-            if (city == "")
-                return false;
-            if (organization == "")
-                return false;
-            if (unit == "")
-                return false;
-            if (email == "")
-                return false;
-            if (login == "")
-                return false;
-            return true;
-        }
-
-    }
-
-
-
-    public class ControlWriter : TextWriter
-    {
-        private Control textbox;
-        public ControlWriter(Control textbox)
-        {
-            this.textbox = textbox;
-        }
-
-        public override void Write(char value)
-        {
-            textbox.Text += value;
-        }
-
-        public override void Write(string value)
-        {
-            textbox.Text += value;
-        }
-
-        public override Encoding Encoding
-        {
-            get { return Encoding.ASCII; }
-        }
-    }
-    public class MultiTextWriter : TextWriter
-    {
-        private IEnumerable<TextWriter> writers;
-        public MultiTextWriter(IEnumerable<TextWriter> writers)
-        {
-            this.writers = writers.ToList();
-        }
-        public MultiTextWriter(params TextWriter[] writers)
-        {
-            this.writers = writers;
-        }
-
-        public override void Write(char value)
-        {
-            foreach (var writer in writers)
-                writer.Write(value);
-        }
-
-        public override void Write(string value)
-        {
-            foreach (var writer in writers)
-                writer.Write(value);
-        }
-
-        public override void Flush()
-        {
-            foreach (var writer in writers)
-                writer.Flush();
-        }
-
-        public override void Close()
-        {
-            foreach (var writer in writers)
-                writer.Close();
-        }
-
-        public override Encoding Encoding
-        {
-            get { return Encoding.ASCII; }
-        }
+        
     }
 }

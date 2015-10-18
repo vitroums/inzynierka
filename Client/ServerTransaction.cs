@@ -3,6 +3,8 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Client.Errors;
+using Client.ClientData;
+using Client.ServerData;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -11,13 +13,13 @@ namespace Client
     public class ServerTransaction
     {
         private static string ip = "127.0.0.1";
-        private static int bufferSize = 128;
+        private static int port = 12345;
 
-        public static string CreateNewUser(string name, string mail, string data, string keysPassword, string rescuePassword)
+        public static string CreateNewUser(UserCertificateInfo certificateInformation, string keysPassword, string rescuePassword, string outputPath)
         {
             string response, id;
 
-            using (SslClient stream = new SslClient(ip, 12345))
+            using (SslClient stream = new SslClient(ip, port))
             {
                 stream.SendString("new-user");
                 response =  stream.ReceiveString();
@@ -26,14 +28,14 @@ namespace Client
                     UnknownCommandError("provide-user-name", response);
                 }
                 stream.SendString("user-name");
-                stream.SendString(name);
+                stream.SendString(certificateInformation.CommonName);
                 response =  stream.ReceiveString();
                 if (response != "provide-user-mail")
                 {
                     UnknownCommandError("provide-user-mail", response);
                 }
                 stream.SendString("user-mail");
-                stream.SendString(mail);
+                stream.SendString(certificateInformation.Email);
                 response =  stream.ReceiveString();
                 if (response == "user-exists")
                 {
@@ -44,7 +46,7 @@ namespace Client
                     UnknownCommandError("provide-user-data", response);
                 }
                 stream.SendString("user-data");
-                stream.SendString(data);
+                stream.SendString(certificateInformation.ToString());
                 response =  stream.ReceiveString();
                 if (response != "provide-keys-password")
                 {
@@ -73,7 +75,7 @@ namespace Client
                 {
                     UnknownCommandError("certificate-file", response);
                 }
-                stream.ReceiveFile("certificate.pfx");
+                stream.ReceiveFile(outputPath + certificateInformation.CommonName + ".pfx");
                 response =  stream.ReceiveString();
                 if (response != "user-id")
                 {
@@ -86,7 +88,7 @@ namespace Client
             return id;
         }
 
-        public static bool Authenticate(SslClient stream, string id, string login, string mail)
+        private static bool Authenticate(SslClient stream, UserInfo user)
         {
             string response;
             stream.SendString("login");
@@ -96,21 +98,21 @@ namespace Client
                 UnknownCommandError("provide-user-id", response);
             }
             stream.SendString("user-id");
-            stream.SendString(id);
+            stream.SendString(user.ID);
             response =  stream.ReceiveString();
             if (response != "provide-user-name")
             {
                 UnknownCommandError("provide-user-name", response);
             }
             stream.SendString("user-name");
-            stream.SendString(login);
+            stream.SendString(user.Name);
             response =  stream.ReceiveString();
             if (response != "provide-user-mail")
             {
                 UnknownCommandError("provide-user-mail", response);
             }
             stream.SendString("user-mail");
-            stream.SendString(mail);
+            stream.SendString(user.Email);
             response =  stream.ReceiveString();
             if (response == "user-doesnt-exist")
             {
@@ -127,13 +129,13 @@ namespace Client
             return true;
         }
 
-        public static bool CreateNewGroup(string name, string password, string id, string login, string mail)
+        public static bool CreateNewGroup(GroupInfo group, UserInfo user, Certificate certificate)
         {
             string response;
 
-            using (SslClient stream = new SslClient(ip, 12345))
+            using (SslClient stream = new SslClient(ip, port, certificate))
             {
-                 Authenticate(stream, id, login, mail);
+                Authenticate(stream, user);
                 stream.SendString("new-group");
                 response =  stream.ReceiveString();
                 if (response != "provide-group-name")
@@ -141,14 +143,14 @@ namespace Client
                     UnknownCommandError("provide-group-name", response);
                 }
                 stream.SendString("group-name");
-                stream.SendString(name);
+                stream.SendString(group.Name);
                 response =  stream.ReceiveString();
                 if (response != "provide-group-password")
                 {
                     UnknownCommandError("provide-group-password", response);
                 }
                 stream.SendString("group-password");
-                stream.SendString(password);
+                stream.SendString(group.Password);
                 response =  stream.ReceiveString();
                 if (response == "group-exists")
                 {
@@ -164,87 +166,20 @@ namespace Client
 
         }
 
-        public static string DecryptString(string encryptedData, string pathToPrivateKey)
+        public static bool Connect(Certificate certificate)
         {
-            X509Certificate2 certificate;
             try
             {
-                certificate = new X509Certificate2(pathToPrivateKey);
+                using (SslClient stream = new SslClient(ip, port, certificate))
+                {
+                    stream.SendString("connect");
+                }
             }
-            catch
+            catch (AuthenticationError)
             {
-                throw new CryptographicException("Unable to open key file.");
+                return false;
             }
-
-            RSACryptoServiceProvider privateKey;
-            if (certificate.HasPrivateKey)
-            {
-                privateKey = (RSACryptoServiceProvider)certificate.PrivateKey;
-            }
-            else
-            {
-                throw new CryptographicException("Private key not contained within certificate.");
-            }
-
-
-            if (privateKey == null)
-            {
-                return string.Empty;
-            }
-
-            byte[] decryptedBytes;
-            //try
-            //{
-                decryptedBytes = privateKey.Decrypt(Convert.FromBase64String(encryptedData), false);
-            //}
-            //catch
-            //{
-                throw new CryptographicException("Unable to decrypt data.");
-            //}
-
-            if (decryptedBytes.Length == 0)
-            {
-                return string.Empty;
-            }
-            else
-            {
-                return System.Text.Encoding.UTF8.GetString(decryptedBytes);
-            }
-        }
-
-        public static string EncryptString(string messageToEncrypt, string pathToPublicKey)
-        {
-            X509Certificate2 certificate;
-            byte[] certBuffer = GetBytesFromPEM(pathToPublicKey);
-            try
-            {
-                certificate = new X509Certificate2(certBuffer);
-            }
-            catch
-            {
-                throw new CryptographicException("Unable to open key file.");
-            }
-
-            RSACryptoServiceProvider myRSAProvide = (RSACryptoServiceProvider)certificate.PublicKey.Key;
-            byte[] resultBytes = null;
-            //try
-            //{
-               var decryptedDateBytes = Encoding.UTF8.GetBytes(messageToEncrypt);
-               resultBytes = myRSAProvide.Encrypt(decryptedDateBytes, false);
-            //}  
-            //catch
-            //{
-            //    throw new CryptographicException("Unable to encypt data.");
-            //}
-
-            if (resultBytes.Length == 0)
-            {
-                return string.Empty;
-            }
-            else
-            {
-                return Encoding.UTF8.GetString(resultBytes);
-            }
+            return true;
         }
 
         public static void DecryptFile(string inFile, string outFile, RSACryptoServiceProvider rsaProvider)
@@ -475,24 +410,6 @@ namespace Client
                     break;
             }
             throw new AuthenticationError(messageBuilder.ToString());
-        }
-
-        static public byte[] GetBytesFromPEM(string pathToFile)
-        {
-            var header = String.Format("-----BEGIN {0}-----", "CERTIFICATE");
-            var footer = String.Format("-----END {0}-----", "CERTIFICATE");
-
-            var pemString = System.IO.File.ReadAllText(pathToFile);
-
-            var start = pemString.IndexOf(header, StringComparison.Ordinal) + header.Length;
-            var end = pemString.IndexOf(footer, start, StringComparison.Ordinal) - start;
-
-            if (start < 0 || end < 0)
-            {
-                return null;
-            }
-
-            return Convert.FromBase64String(pemString.Substring(start, end));
         }
     }
 }

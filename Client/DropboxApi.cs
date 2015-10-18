@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using DropNet;
 using DropNet.Models;
 using System.Xml;
 using System.IO;
-using System.Xml.Linq;
+using Client.ClientData;
+using Client.ServerData;
 
 namespace Client
 {
@@ -18,8 +17,8 @@ namespace Client
             ConnectToCloud(group);
         }
         DropNetClient _client;
-        List<User> _userList = new List<User>();
-        List<Group> _groupsList = new List<Group>();
+        List<UserInfo> _userList = new List<UserInfo>();
+        List<GroupInfo> _groupsList = new List<GroupInfo>();
         string _path = @"/";
 
         // łączenie do chmury - jeżeli jest podana grupa to ustawia to w ścieżce globalnej
@@ -57,10 +56,10 @@ namespace Client
                 XmlNodeList UsersNodeList = UsersListNode.SelectNodes("User");
                 foreach (XmlNode node in UsersNodeList)
                 {
-                    User _user = new User();
-                    _user.guid = node.Attributes.GetNamedItem("guid").Value;
-                    _user.nick = node.Attributes.GetNamedItem("nick").Value;
-                    _user.mail = node.Attributes.GetNamedItem("mail").Value;
+                    UserInfo _user = new UserInfo();
+                    _user.ID = node.Attributes.GetNamedItem("guid").Value;
+                    _user.Name = node.Attributes.GetNamedItem("nick").Value;
+                    _user.Email = node.Attributes.GetNamedItem("mail").Value;
                     _userList.Add(_user);
                 }
             }
@@ -85,9 +84,9 @@ namespace Client
                 XmlNodeList GroupsNodeList = GroupListNode.SelectNodes("Group");
                 foreach (XmlNode node in GroupsNodeList)
                 {
-                    Group _group = new Group();
-                    _group.name = node.Attributes.GetNamedItem("name").Value;
-                    _group.password = node.Attributes.GetNamedItem("password").Value;
+                    GroupInfo _group = new GroupInfo();
+                    _group.Name = node.Attributes.GetNamedItem("name").Value;
+                    _group.Password = node.Attributes.GetNamedItem("password").Value;
                     _groupsList.Add(_group);
                 }
             }
@@ -150,9 +149,9 @@ namespace Client
         {
             LoadGroups();
             List<string> names = new List<string>();
-            foreach (Group g in _groupsList)
+            foreach (GroupInfo g in _groupsList)
             {
-                names.Add(g.name);
+                names.Add(g.Name);
             }
             return names;
         }
@@ -161,9 +160,9 @@ namespace Client
         public List<string> GetUsersNamesList()
         {
             List<string> names = new List<string>();
-            foreach (User u in _userList)
+            foreach (UserInfo u in _userList)
             {
-                names.Add(u.nick);
+                names.Add(u.Name);
             }
             return names;
         }
@@ -171,21 +170,21 @@ namespace Client
         // walidacja poprawnosci hasla
         public bool ValidatePassword(string pass, string groupName)
         {
-            foreach(Group g in _groupsList)
+            foreach(GroupInfo g in _groupsList)
             {
-                if (g.name == groupName && g.password == pass)
+                if (g.Name == groupName && g.Password == pass)
                     return true;
             }
             return false;
         }
 
         // jeżeli nie istneje to dodanie uzytkowika
-        public List<User> AddUserIfNotExist(string guid, string email, string login)
+        public List<UserInfo> AddUserIfNotExist(UserInfo user)
         {
             bool exist = false;
-            foreach (User u in _userList)
+            foreach (UserInfo u in _userList)
             {
-                if (u.guid == guid)
+                if (u.ID == user.ID)
                 {
                     exist = true;
                     break;
@@ -193,11 +192,7 @@ namespace Client
             }
             if (!exist)
             {
-                User newUser = new User();
-                newUser.guid = guid;
-                newUser.mail = email;
-                newUser.nick = login;
-                _userList.Add(newUser);
+                _userList.Add(user);
             }
             UpdateGroupUserList();
             return _userList;
@@ -211,12 +206,12 @@ namespace Client
             using (XmlWriter writer = XmlWriter.Create("list.xml", settings))
             {
                 writer.WriteStartElement("Users");
-                foreach(User u in _userList)
+                foreach(UserInfo u in _userList)
                 {
                     writer.WriteStartElement("User");
-                    writer.WriteAttributeString("guid", u.guid);
-                    writer.WriteAttributeString("nick", u.nick);
-                    writer.WriteAttributeString("mail", u.mail);
+                    writer.WriteAttributeString("guid", u.ID);
+                    writer.WriteAttributeString("nick", u.Name);
+                    writer.WriteAttributeString("mail", u.Email);
                     writer.WriteEndElement();
                 }
                 writer.WriteEndElement();
@@ -250,27 +245,5 @@ namespace Client
             _client.UploadFile(_path + guid + "/", "welcome.txt", bytes);
         }
 
-    }
-
-    public class User
-    {
-        public string guid { get; set; }
-        public string nick { get; set; }
-        public string mail { get; set; }
-
-        public override string ToString()
-        {
-            return nick;
-        }
-    }
-
-    public class Group
-    {
-        public string password { get; set; }
-        public string name { get; set; }
-        public override string ToString()
-        {
-            return name;
-        }
     }
 }

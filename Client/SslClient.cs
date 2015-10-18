@@ -14,16 +14,22 @@ namespace Client
     {
 
         private readonly int _bufferSize;
-        private readonly X509CertificateCollection _certificates;
+        private readonly X509Certificate2 _certificate;
         private readonly SslStream _stream;
 
-        public SslClient(string ip, int port, int bufferSize = 1024) : base(ip, port)
+        public SslClient(string ip, int port, Certificate certificate = null, int bufferSize = 1024) : base(ip, port)
         {
             try
             {
                 _bufferSize = bufferSize;
-                _certificates = new X509CertificateCollection();
-                FetchCertificates();
+                if (certificate != null)
+                {
+                    _certificate = certificate;
+                }
+                else
+                {
+                    _certificate = new X509Certificate2();
+                }
                 _stream = new SslStream(GetStream(), false, ServerCertificateValidation, UserCertificateSelection);
                 _stream.AuthenticateAsClient(ip);
             }
@@ -36,29 +42,13 @@ namespace Client
         #region Certificates Proccess
         private bool ServerCertificateValidation(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
-            //TODO: Implement server certificate validation
+            //TODO: Trzeba będzie dodać porównywanie certificate z certyfikatem CA
             return true;
         }
 
         private X509Certificate UserCertificateSelection(object sender, string targetHost, X509CertificateCollection localCertificates, X509Certificate remoteCertificate, string[] acceptableIssuers)
         {
-            //TODO: Implement proper system of user certificate selection
-            return _certificates[0];
-        }
-
-        private void FetchCertificates()
-        {
-            //TODO: Implement proper system o featching certificates
-            X509Certificate cert;
-            if (File.Exists("certificate.pfx"))
-            {
-                cert = new X509Certificate2("certificate.pfx");
-            }
-            else
-            {
-                cert = new X509Certificate();
-            }
-            _certificates.Add(cert);
+            return _certificate;
         }
         #endregion
 
@@ -67,7 +57,6 @@ namespace Client
             var buffer = Encoding.UTF8.GetBytes(message);
             SendStreamSize(message.Length);
              _stream.Write(buffer, 0, buffer.Length);
-            Console.WriteLine("Sended: " + message);
         }
 
         public void SendFile(string path)
@@ -84,7 +73,6 @@ namespace Client
                     bytesRead = reader.Read(buffer, 0, _bufferSize);
                 }
             }
-            Console.WriteLine("Sended: " + path);
         }
 
         public string ReceiveString()
@@ -131,7 +119,6 @@ namespace Client
         {
             var buffer = new byte[64];
              _stream.Read(buffer, 0, 64);
-            Console.WriteLine("Received: " + Convert.ToInt64(System.Text.Encoding.UTF8.GetString(buffer, 0, 64), 2));
             return Convert.ToInt64(System.Text.Encoding.UTF8.GetString(buffer, 0, 64), 2);
         }
         #endregion

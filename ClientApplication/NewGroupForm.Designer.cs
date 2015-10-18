@@ -41,7 +41,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(13, 12);
+            this.label4.Location = new System.Drawing.Point(10, 15);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(65, 13);
             this.label4.TabIndex = 11;
@@ -60,7 +60,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(10, 38);
+            this.label1.Location = new System.Drawing.Point(10, 42);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(53, 13);
             this.label1.TabIndex = 13;
@@ -68,7 +68,7 @@
             // 
             // passwordTextBox
             // 
-            this.passwordTextBox.Location = new System.Drawing.Point(106, 35);
+            this.passwordTextBox.Location = new System.Drawing.Point(106, 39);
             this.passwordTextBox.Name = "passwordTextBox";
             this.passwordTextBox.PasswordChar = '*';
             this.passwordTextBox.Size = new System.Drawing.Size(178, 20);
@@ -79,7 +79,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(10, 64);
+            this.label2.Location = new System.Drawing.Point(10, 68);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(90, 13);
             this.label2.TabIndex = 15;
@@ -87,7 +87,7 @@
             // 
             // repeatPasswordTextBox
             // 
-            this.repeatPasswordTextBox.Location = new System.Drawing.Point(106, 61);
+            this.repeatPasswordTextBox.Location = new System.Drawing.Point(106, 65);
             this.repeatPasswordTextBox.Name = "repeatPasswordTextBox";
             this.repeatPasswordTextBox.PasswordChar = '*';
             this.repeatPasswordTextBox.Size = new System.Drawing.Size(178, 20);
@@ -97,7 +97,7 @@
             // 
             // cancelButton
             // 
-            this.cancelButton.Location = new System.Drawing.Point(186, 87);
+            this.cancelButton.Location = new System.Drawing.Point(186, 91);
             this.cancelButton.Name = "cancelButton";
             this.cancelButton.Size = new System.Drawing.Size(98, 23);
             this.cancelButton.TabIndex = 17;
@@ -107,7 +107,7 @@
             // 
             // okButton
             // 
-            this.okButton.Location = new System.Drawing.Point(13, 87);
+            this.okButton.Location = new System.Drawing.Point(13, 91);
             this.okButton.Name = "okButton";
             this.okButton.Size = new System.Drawing.Size(99, 23);
             this.okButton.TabIndex = 16;
@@ -129,7 +129,7 @@
             this.Controls.Add(this.label4);
             this.Controls.Add(this.nameTextBox);
             this.Name = "NewGroupForm";
-            this.Text = "NewGroupForm";
+            this.Text = "Provide data for new group";
             this.ResumeLayout(false);
             this.PerformLayout();
 

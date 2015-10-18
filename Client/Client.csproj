@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="Certificate.cs" />
     <Compile Include="Certificates.cs" />
+    <Compile Include="ClientData\UserInfo.cs" />
     <Compile Include="Errors\AuthenticationError.cs" />
     <Compile Include="DropboxApi.cs" />
     <Compile Include="Errors\ServerResponseError.cs" />

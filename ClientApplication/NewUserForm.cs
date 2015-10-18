@@ -71,7 +71,7 @@ namespace ClientApplication
         {
             if (!NewUserInfo.Validate())
             {
-                MessageBox.Show("Fill all fields!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                MessageBox.Show("Fill all fields", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
             else
             {
