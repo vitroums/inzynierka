@@ -47,14 +47,16 @@
             this.identityPanel = new System.Windows.Forms.Panel();
             this.groupsPanel = new System.Windows.Forms.Panel();
             this.usersPanel = new System.Windows.Forms.Panel();
-            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.statusBar = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.loginLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.filesPanel = new System.Windows.Forms.Panel();
+            this.refreshFilesButton = new System.Windows.Forms.Button();
+            this.deleteFilesButton = new System.Windows.Forms.Button();
             this.identityPanel.SuspendLayout();
             this.groupsPanel.SuspendLayout();
             this.usersPanel.SuspendLayout();
-            this.statusStrip1.SuspendLayout();
+            this.statusBar.SuspendLayout();
             this.filesPanel.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -148,6 +150,7 @@
             // 
             // filesListBox
             // 
+            this.filesListBox.Cursor = System.Windows.Forms.Cursors.Default;
             this.filesListBox.FormattingEnabled = true;
             this.filesListBox.Location = new System.Drawing.Point(6, 20);
             this.filesListBox.Name = "filesListBox";
@@ -168,7 +171,7 @@
             // 
             this.downloadFilesButton.Location = new System.Drawing.Point(6, 436);
             this.downloadFilesButton.Name = "downloadFilesButton";
-            this.downloadFilesButton.Size = new System.Drawing.Size(294, 53);
+            this.downloadFilesButton.Size = new System.Drawing.Size(94, 53);
             this.downloadFilesButton.TabIndex = 14;
             this.downloadFilesButton.Text = "Download selected files";
             this.downloadFilesButton.UseVisualStyleBackColor = true;
@@ -213,7 +216,6 @@
             this.identitiesListBox.Name = "identitiesListBox";
             this.identitiesListBox.Size = new System.Drawing.Size(294, 82);
             this.identitiesListBox.TabIndex = 22;
-            this.identitiesListBox.SelectedIndexChanged += new System.EventHandler(this.identitiesListBox_SelectedIndexChanged);
             // 
             // identityPanel
             // 
@@ -248,16 +250,16 @@
             this.usersPanel.Size = new System.Drawing.Size(306, 173);
             this.usersPanel.TabIndex = 25;
             // 
-            // statusStrip1
+            // statusBar
             // 
-            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.statusBar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1,
             this.loginLabel});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 519);
-            this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(641, 22);
-            this.statusStrip1.TabIndex = 26;
-            this.statusStrip1.Text = "statusStrip1";
+            this.statusBar.Location = new System.Drawing.Point(0, 519);
+            this.statusBar.Name = "statusBar";
+            this.statusBar.Size = new System.Drawing.Size(641, 22);
+            this.statusBar.TabIndex = 26;
+            this.statusBar.Text = "statusStrip1";
             // 
             // toolStripStatusLabel1
             // 
@@ -274,6 +276,8 @@
             // 
             // filesPanel
             // 
+            this.filesPanel.Controls.Add(this.deleteFilesButton);
+            this.filesPanel.Controls.Add(this.refreshFilesButton);
             this.filesPanel.Controls.Add(this.myFileslabel);
             this.filesPanel.Controls.Add(this.filesListBox);
             this.filesPanel.Controls.Add(this.downloadFilesButton);
@@ -283,13 +287,33 @@
             this.filesPanel.Size = new System.Drawing.Size(306, 495);
             this.filesPanel.TabIndex = 27;
             // 
+            // refreshFilesButton
+            // 
+            this.refreshFilesButton.Location = new System.Drawing.Point(106, 436);
+            this.refreshFilesButton.Name = "refreshFilesButton";
+            this.refreshFilesButton.Size = new System.Drawing.Size(94, 53);
+            this.refreshFilesButton.TabIndex = 19;
+            this.refreshFilesButton.Text = "Refresh files";
+            this.refreshFilesButton.UseVisualStyleBackColor = true;
+            this.refreshFilesButton.Click += new System.EventHandler(this.refreshFilesButton_Click);
+            // 
+            // deleteFilesButton
+            // 
+            this.deleteFilesButton.Location = new System.Drawing.Point(206, 436);
+            this.deleteFilesButton.Name = "deleteFilesButton";
+            this.deleteFilesButton.Size = new System.Drawing.Size(94, 53);
+            this.deleteFilesButton.TabIndex = 20;
+            this.deleteFilesButton.Text = "Delete files";
+            this.deleteFilesButton.UseVisualStyleBackColor = true;
+            this.deleteFilesButton.Click += new System.EventHandler(this.deleteFilesButton_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(641, 541);
             this.Controls.Add(this.filesPanel);
-            this.Controls.Add(this.statusStrip1);
+            this.Controls.Add(this.statusBar);
             this.Controls.Add(this.usersPanel);
             this.Controls.Add(this.groupsPanel);
             this.Controls.Add(this.identityPanel);
@@ -302,8 +326,8 @@
             this.groupsPanel.PerformLayout();
             this.usersPanel.ResumeLayout(false);
             this.usersPanel.PerformLayout();
-            this.statusStrip1.ResumeLayout(false);
-            this.statusStrip1.PerformLayout();
+            this.statusBar.ResumeLayout(false);
+            this.statusBar.PerformLayout();
             this.filesPanel.ResumeLayout(false);
             this.filesPanel.PerformLayout();
             this.ResumeLayout(false);
@@ -331,10 +355,12 @@
         private System.Windows.Forms.Panel identityPanel;
         private System.Windows.Forms.Panel groupsPanel;
         private System.Windows.Forms.Panel usersPanel;
-        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.StatusStrip statusBar;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.ToolStripStatusLabel loginLabel;
         private System.Windows.Forms.Panel filesPanel;
+        private System.Windows.Forms.Button refreshFilesButton;
+        private System.Windows.Forms.Button deleteFilesButton;
     }
 }
 

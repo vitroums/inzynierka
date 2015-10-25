@@ -26,7 +26,6 @@
         self.__certificateFile = "cert.crt"
         self.__keysFile = "keys.key"
         self.__certificatesDir = "certs"
-        self.__keysDir = "keys"
         self.__host = ""
         self.__port = 12345
         self.__caInformations = {"country":"PL", "state":"Pomorskie", "city":"Gdańsk", "organization":"PG", "unit":"ETI", "name":"PKI Cloud"}
@@ -34,14 +33,11 @@
         self.__notBefore = 0
         self.__notAfter = 10*356*24*60*60
         self.__signMethod = "sha1"
-        self.__caPassword = "123456"
         self.__encoding = "utf-8"
         self.__bufferSize = 1024
         self.__dropboxApiKey = "q7RSg2cm1vAAAAAAAAAAC7sy1AfF2zsSStdhuG0KdJs3ieupiQ6A2Izek-5r8DE-"
         self.__userDatabaseFileName = "list.xml"
         self.__groupDatabaseFileName = "group.xml"
-        self.__passwordDir = "passwords"
-        self.__passwordDir = "certs"
 
     @property
     def certificateFile(self):

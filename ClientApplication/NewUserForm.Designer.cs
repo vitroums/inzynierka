@@ -44,11 +44,15 @@
             this.label7 = new System.Windows.Forms.Label();
             this.okButton = new System.Windows.Forms.Button();
             this.cancelButton = new System.Windows.Forms.Button();
+            this.label8 = new System.Windows.Forms.Label();
+            this.pathTextBox = new System.Windows.Forms.TextBox();
+            this.selectPathButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // countryTextBox
             // 
             this.countryTextBox.Location = new System.Drawing.Point(98, 12);
+            this.countryTextBox.MaxLength = 2;
             this.countryTextBox.Name = "countryTextBox";
             this.countryTextBox.Size = new System.Drawing.Size(178, 20);
             this.countryTextBox.TabIndex = 0;
@@ -59,6 +63,7 @@
             // stateTextBox
             // 
             this.stateTextBox.Location = new System.Drawing.Point(98, 38);
+            this.stateTextBox.MaxLength = 27;
             this.stateTextBox.Name = "stateTextBox";
             this.stateTextBox.Size = new System.Drawing.Size(178, 20);
             this.stateTextBox.TabIndex = 1;
@@ -69,6 +74,7 @@
             // cityTextBox
             // 
             this.cityTextBox.Location = new System.Drawing.Point(98, 64);
+            this.cityTextBox.MaxLength = 27;
             this.cityTextBox.Name = "cityTextBox";
             this.cityTextBox.Size = new System.Drawing.Size(178, 20);
             this.cityTextBox.TabIndex = 2;
@@ -79,6 +85,7 @@
             // organizationTextBox
             // 
             this.organizationTextBox.Location = new System.Drawing.Point(98, 90);
+            this.organizationTextBox.MaxLength = 27;
             this.organizationTextBox.Name = "organizationTextBox";
             this.organizationTextBox.Size = new System.Drawing.Size(178, 20);
             this.organizationTextBox.TabIndex = 3;
@@ -89,6 +96,7 @@
             // unitTextBox
             // 
             this.unitTextBox.Location = new System.Drawing.Point(98, 116);
+            this.unitTextBox.MaxLength = 17;
             this.unitTextBox.Name = "unitTextBox";
             this.unitTextBox.Size = new System.Drawing.Size(178, 20);
             this.unitTextBox.TabIndex = 4;
@@ -99,6 +107,7 @@
             // commonNameTextBox
             // 
             this.commonNameTextBox.Location = new System.Drawing.Point(98, 142);
+            this.commonNameTextBox.MaxLength = 27;
             this.commonNameTextBox.Name = "commonNameTextBox";
             this.commonNameTextBox.Size = new System.Drawing.Size(178, 20);
             this.commonNameTextBox.TabIndex = 5;
@@ -108,6 +117,7 @@
             // emailTextBox
             // 
             this.emailTextBox.Location = new System.Drawing.Point(98, 168);
+            this.emailTextBox.MaxLength = 27;
             this.emailTextBox.Name = "emailTextBox";
             this.emailTextBox.Size = new System.Drawing.Size(178, 20);
             this.emailTextBox.TabIndex = 6;
@@ -179,7 +189,7 @@
             // 
             // okButton
             // 
-            this.okButton.Location = new System.Drawing.Point(13, 203);
+            this.okButton.Location = new System.Drawing.Point(16, 240);
             this.okButton.Name = "okButton";
             this.okButton.Size = new System.Drawing.Size(99, 23);
             this.okButton.TabIndex = 14;
@@ -189,7 +199,7 @@
             // 
             // cancelButton
             // 
-            this.cancelButton.Location = new System.Drawing.Point(178, 203);
+            this.cancelButton.Location = new System.Drawing.Point(178, 240);
             this.cancelButton.Name = "cancelButton";
             this.cancelButton.Size = new System.Drawing.Size(98, 23);
             this.cancelButton.TabIndex = 15;
@@ -197,11 +207,41 @@
             this.cancelButton.UseVisualStyleBackColor = true;
             this.cancelButton.Click += new System.EventHandler(this.cancelButton_Click);
             // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(13, 197);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(116, 13);
+            this.label8.TabIndex = 16;
+            this.label8.Text = "Path to save certificate";
+            // 
+            // pathTextBox
+            // 
+            this.pathTextBox.Location = new System.Drawing.Point(16, 214);
+            this.pathTextBox.Name = "pathTextBox";
+            this.pathTextBox.ReadOnly = true;
+            this.pathTextBox.Size = new System.Drawing.Size(179, 20);
+            this.pathTextBox.TabIndex = 17;
+            // 
+            // selectPathButton
+            // 
+            this.selectPathButton.Location = new System.Drawing.Point(201, 211);
+            this.selectPathButton.Name = "selectPathButton";
+            this.selectPathButton.Size = new System.Drawing.Size(75, 23);
+            this.selectPathButton.TabIndex = 18;
+            this.selectPathButton.Text = "Select";
+            this.selectPathButton.UseVisualStyleBackColor = true;
+            this.selectPathButton.Click += new System.EventHandler(this.selectPathButton_Click);
+            // 
             // NewUserForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(288, 238);
+            this.ClientSize = new System.Drawing.Size(288, 271);
+            this.Controls.Add(this.selectPathButton);
+            this.Controls.Add(this.pathTextBox);
+            this.Controls.Add(this.label8);
             this.Controls.Add(this.cancelButton);
             this.Controls.Add(this.okButton);
             this.Controls.Add(this.label7);
@@ -244,5 +284,8 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Button okButton;
         private System.Windows.Forms.Button cancelButton;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.TextBox pathTextBox;
+        private System.Windows.Forms.Button selectPathButton;
     }
 }

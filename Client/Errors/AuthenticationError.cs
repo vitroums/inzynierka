@@ -4,9 +4,6 @@ namespace Client.Errors
 {
     public class AuthenticationError : Exception
     {
-        public AuthenticationError(string message) : base(message)
-        {
-
-        }
+        public AuthenticationError(string message) : base(message) { }
     }
 }

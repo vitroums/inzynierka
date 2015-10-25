@@ -1,91 +1,106 @@
-﻿using System;
+﻿using Client;
+using Client.Errors;
+using Client.Clients;
+using Client.Certificates;
+using Client.Cloud;
+using Client.Groups;
+using Client.Cryptography;
+using System;
 using System.ComponentModel;
 using System.Windows.Forms;
-using Client;
-using Client.Errors;
-using Client.ClientData;
 using System.IO;
-using System.Security.Cryptography;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace ClientApplication
 {
     public partial class MainForm : Form
     {
-        DropboxApi _cloud = new DropboxApi();
-        UserInfo _userInformation;
+        Dropbox _cloud = null;
+        User _currentUser = null;
         bool _connected = false;
         bool _connectedToGroup = false;
-        Certificate _certificate = null;
-        BindingList<Certificate> _identitiesList;
-        string _certificatesPath = "D:\\Desktop\\";
-        
+        UserCertificate _certificate = null;
+        BindingList<UserCertificate> _identitiesList = new BindingList<UserCertificate>(CertificatesProcess.GetCertificates());
         
         public MainForm()
         {
             InitializeComponent();
-            ReloadButtonState();
-            _userInformation = new UserInfo();
-            _identitiesList = new BindingList<Certificate>(Certificates.GetCertificates());
-            identitiesListBox.DataSource = _identitiesList;            
-        }
-
-        private void identitiesListBox_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            var identitiesList = sender as ListBox;
-            _certificate = identitiesList.SelectedItem as Certificate;
-        }
-
-        private void connectButton_Click(object sender, EventArgs e)
-        {
-            _connected = ServerTransaction.Connect(_certificate);
-            ReloadButtonState();
-            if (_connected)
+            identitiesListBox.DataSource = _identitiesList;
+            if (_identitiesList.Count == 0)
             {
-                var login = _certificate.ToString();
+                connectButton.Enabled = false;
+            }
+            ReloadButtonState();
+            DisableGroups();
+            DisableUsers();
+            DisableFiles();         
+        }
+
+        private async void connectButton_Click(object sender, EventArgs e)
+        {
+            DisableAll();
+            var statusLabel = new ToolStripStatusLabel("Connecting");
+            statusBar.Items.Add(statusLabel);
+            if (_connected)
+                DisconnectUser();
+
+            _certificate = identitiesListBox.SelectedItem as UserCertificate;
+            if (await ServerTransaction.Connect(_certificate))
+            {
+                await ConnectUser();
+
+                var login = _certificate.CommonName;
                 loginLabel.Text = login;
+
                 var message = string.Format("Successfull logged as {0}", login);
                 MessageBox.Show(message, "Successful", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                UpdateGroupList();
-                _userInformation.ID = _certificate.ID;
-                _userInformation.Name = _certificate.ToString();
-                _userInformation.Email = _certificate.Email;
+
+                _currentUser = _certificate;
             }
             else
             {
-                loginLabel.Text = "Unconnected";
-                MessageBox.Show("", "Login failed", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                MessageBox.Show("Faild to authenticate", "Login failed", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
+            EnableIdentity();
+            if (_connected)
+                EnableGroups();
+            statusBar.Items.Remove(statusLabel);
         }
 
-        private void newUserButton_Click(object sender, EventArgs e)
+        private async void newUserButton_Click(object sender, EventArgs e)
         {
+            DisableAll();
+            var statusLabel = new ToolStripStatusLabel("Creating new user");
+            statusBar.Items.Add(statusLabel);
+
             using (var newUserForm = new NewUserForm())
             {
                 if (newUserForm.ShowDialog() == DialogResult.OK)
                 {
                     var newUserInfo = newUserForm.NewUserInfo;
+                    var pathToSave = newUserForm.PathToSave;
                     try
                     {
-                        if (_connected)
-                        {
-                            ClearProperties();
-                        }
-                        _userInformation.ID = ServerTransaction.CreateNewUser(newUserInfo, "1234", "123456", _certificatesPath);
-                        _userInformation.Name = newUserInfo.CommonName;
-                        _userInformation.Email = newUserInfo.Email;
-                        var newCertificatePath = _certificatesPath + _userInformation.Name + ".pfx";
+                        DisconnectUser();
+                        await ServerTransaction.CreateNewUser(newUserInfo, pathToSave);
+
+                        _certificate = new UserCertificate(pathToSave);
+                        _currentUser = _certificate;
+
                         Process addCertificateProcess = new Process();
                         addCertificateProcess.EnableRaisingEvents = false;
-                        addCertificateProcess.StartInfo.FileName = newCertificatePath;
+                        addCertificateProcess.StartInfo.FileName = pathToSave;
                         addCertificateProcess.Start();
-                        _connected = true;
-                        ReloadButtonState();
-                        loginLabel.Text = _userInformation.Name;
-                        var message = string.Format("Welcome {0}.\nYour ID is {1}", _userInformation.Name, _userInformation.ID);
+
+                        loginLabel.Text = _currentUser.CommonName;
+
+                        var message = string.Format("Welcome {0}.", _currentUser.CommonName);
                         MessageBox.Show(message, "New user", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        UpdateGroupList();
-                        _identitiesList.Add(new Certificate(newCertificatePath));
+
+                        _identitiesList.Add(_certificate);
+
+                        await ConnectUser();
                     }
                     catch (UnknownCommadError error)
                     {
@@ -101,10 +116,16 @@ namespace ClientApplication
                     }
                 }
             }
+            EnableIdentity();
+            if (_connected)
+                EnableGroups();
+            statusBar.Items.Remove(statusLabel);
         }
 
         private void loadFromFileButton_Click(object sender, EventArgs e)
         {
+            var statusLabel = new ToolStripStatusLabel("Creating new user");
+            statusBar.Items.Add(statusLabel);
             var openFileDialog = new OpenFileDialog()
             {
                 Filter = "Certificate (.pfx)|*.pfx",
@@ -114,14 +135,19 @@ namespace ClientApplication
             {
                 foreach (var certificate in openFileDialog.FileNames)
                 {
-                    _identitiesList.Add(new Certificate(certificate));
+                    _identitiesList.Add(new UserCertificate(certificate));
                 }
             }
-
+            connectButton.Enabled = true;
+            statusBar.Items.Remove(statusLabel);
         }
 
-        private void newGroupButton_Click(object sender, EventArgs e)
+        private async void newGroupButton_Click(object sender, EventArgs e)
         {
+            DisableAll();
+            var statusLabel = new ToolStripStatusLabel("Creating new group");
+            statusBar.Items.Add(statusLabel);
+
             using (var newGroupForm = new NewGroupForm())
             {
                 if (newGroupForm.ShowDialog() == DialogResult.OK)
@@ -129,9 +155,10 @@ namespace ClientApplication
                     var newGroupInfo = newGroupForm.NewGroupInfo;
                     try
                     {
-                        ServerTransaction.CreateNewGroup(newGroupInfo, _userInformation, _certificate);
-                        MessageBox.Show("Group \"" + newGroupInfo.Name + "\" created", "New group");
-                        UpdateGroupList();
+                        await ServerTransaction.CreateNewGroup(newGroupInfo, _certificate);
+                        var message = string.Format("Group {0} created", newGroupInfo.Name);
+                        MessageBox.Show(message, "New group");
+                        await UpdateGroupList();
                     }
                     catch (UnknownCommadError error)
                     {
@@ -147,44 +174,58 @@ namespace ClientApplication
                     }
                 }
             }
+
+            EnableIdentity();
+            EnableGroups();
+            if (_connectedToGroup)
+            {
+                EnableUsers();
+                EnabledFiles();
+            }
+            statusBar.Items.Remove(statusLabel);
         }
 
-        private void connectToGroupButton_Click(object sender, EventArgs e)
+        private async void connectToGroupButton_Click(object sender, EventArgs e)
         {
-            if (_connected)
+            DisableAll();
+            var statusLabel = new ToolStripStatusLabel("Connecting to group");
+            statusBar.Items.Add(statusLabel);
+
+            using (var passwordForm = new PasswordForm())
             {
-                using (var passwordForm = new PasswordForm())
+                passwordForm.ShowDialog();
+                if (passwordForm.DialogResult == DialogResult.OK)
                 {
-                    passwordForm.ShowDialog();
-                    if (passwordForm.DialogResult == DialogResult.OK)
+                    var password = passwordForm.Password;
+                    var selectedGroup = groupsListBox.SelectedItem as Group;
+                    if (Hasher.HashMD5String(password).Equals(selectedGroup.Password, StringComparison.OrdinalIgnoreCase))
                     {
-                        string password = passwordForm.Password;
-                        string selectedGroup = groupsListBox.SelectedItem.ToString();
-                        if (_cloud.ValidatePassword(password, selectedGroup))
-                        {
-                            _cloud = new DropboxApi(selectedGroup);
-                            var message = string.Format("You are now connected to gropup \"{0}\"", selectedGroup);
-                            MessageBox.Show(message, "Connection sucessfull", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            _cloud.LoadDatabase();
-                            usersListBox.DataSource = _cloud.AddUserIfNotExist(_userInformation);
-                            filesListBox.DataSource = _cloud.GetFilesList(_userInformation.ID);
-                            _connectedToGroup = true;
-                        }
-                        else
-                        {
-                            MessageBox.Show("Typed password is wrong", "Wrong password", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                        }
+                        await ConnectToGroup(selectedGroup.Name);   
+                        var message = string.Format("You are now connected to gropup {0}", selectedGroup.Name);
+                        MessageBox.Show(message, "Connection sucessfull", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Typed password is wrong", "Wrong password", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                     }
                 }
             }
-            else
+
+            EnableIdentity();
+            EnableGroups();
+            if (_connectedToGroup)
             {
-                MessageBox.Show("You have to connect to server first", "Connect", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                EnableUsers();
+                EnabledFiles();
             }
+            statusBar.Items.Remove(statusLabel);
         }
 
-        private void sendFilesButton_Click(object sender, EventArgs e)
+        private async void sendFilesButton_Click(object sender, EventArgs e)
         {
+            DisableAll();
+            var statusLabel = new ToolStripStatusLabel("Sending files");
+            statusBar.Items.Add(statusLabel);
             var selectedUsers = usersListBox.SelectedItems;
             if (selectedUsers.Count > 0)
             {
@@ -194,34 +235,33 @@ namespace ClientApplication
                     string filePath = openFileDialog.FileName;
                     string fileName = openFileDialog.SafeFileName;
 
-                    foreach (UserInfo user in selectedUsers)
+                    foreach (User user in selectedUsers)
                     {
                         if (!encryptCheckBox.Checked)
                         {
-                            _cloud.UploadFile(filePath, fileName, user.ID);
-                            Console.WriteLine("Successfully uploaded: {0}", fileName);
-                            if (user.Name == _userInformation.Name)
+                            statusLabel.Text = string.Format("Uploading {0} to cloud", fileName);
+                            await _cloud.UploadFileAsync(filePath, user, fileName);
+                            if (user == _currentUser)
                             {
-                                filesListBox.DataSource = _cloud.GetFilesList(_userInformation.ID);
+                                filesListBox.DataSource = await _cloud.GetFilesListAsync(_currentUser);
                             }
                         }
                         else
                         {
-                            // upload z szyfrowaniem
-                            StreamReader streamReader = new StreamReader(filePath);
-                            string fContent = streamReader.ReadToEnd();
-                            streamReader.Close();
-
-                            DropboxApi da = new DropboxApi();
-                            da.GetFile(user.ID + ".crt");
-                            var temp = Path.GetTempFileName();
-                            ServerTransaction.EncryptFile(filePath, temp, user.ID + ".crt");
-                            _cloud.UploadFile(temp, fileName, user.ID);
-                            Console.WriteLine("Successfully uploaded");
-                            if (user.Name == _userInformation.Name)
+                            var tempFile = Path.GetTempFileName();
+                            var tempCertificate = Path.GetTempFileName();
+                            statusLabel.Text = string.Format("Downloading certificate ({0})", user.CommonName);
+                            await _cloud.DownloadCertificateAsync(tempCertificate, user);
+                            statusLabel.Text = string.Format("Encrypting {0}", fileName);
+                            await Encrypt.FileWithPublicKey(filePath, tempFile, new UserCertificate(tempCertificate));
+                            statusLabel.Text = string.Format("Uploading {0} to cloud", fileName); ;
+                            await _cloud.UploadFileAsync(tempFile, user, fileName);
+                            if (user == _currentUser)
                             {
-                                filesListBox.DataSource = _cloud.GetFilesList(_userInformation.ID);
+                                filesListBox.DataSource = await _cloud.GetFilesListAsync(_currentUser);
                             }
+                            File.Delete(tempFile);
+                            File.Delete(tempCertificate);
                         }
                     }
                 }
@@ -230,58 +270,190 @@ namespace ClientApplication
             {
                 MessageBox.Show("Select users first", "Select users", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
+
+            EnableAll();
+            statusBar.Items.Remove(statusLabel);
         }
 
-        private void downloadFilesButton_Click(object sender, EventArgs e)
+        private async void downloadFilesButton_Click(object sender, EventArgs e)
         {
-            string selectedFile = (string)filesListBox.SelectedItem;
-            if (!encryptCheckBox.Checked)
+            var statusLabel = new ToolStripStatusLabel("Downloading files");
+            statusBar.Items.Add(statusLabel);
+            var folderBroswerDialog = new FolderBrowserDialog();
+            if (folderBroswerDialog.ShowDialog() == DialogResult.OK)
             {
-                _cloud.GetFile(selectedFile, _userInformation.ID);
-                Console.WriteLine("Successfully download: {0}", selectedFile);
+                var selectedFiles = filesListBox.SelectedItems;
+                foreach (CloudFile file in selectedFiles)
+                {
+                    if (!encryptCheckBox.Checked)
+                    {
+                        statusLabel.Text = string.Format("Downloading {0}", file.Name);
+                        await _cloud.DownloadFileAsync("", _currentUser, file.Name);
+                    }
+                    else
+                    {
+                        var tempFile = Path.GetTempFileName();
+                        statusLabel.Text = string.Format("Downloading {0}", file.Name);
+                        await _cloud.DownloadFileAsync(tempFile, _currentUser, file.Name);
+                        statusLabel.Text = string.Format("Decrypting {0}", file.Name); ;
+                        var outputPath = string.Format("{0}\\{1}", folderBroswerDialog.SelectedPath, file.Name);
+                        await Decrypt.FileWithPrivateKey(tempFile, outputPath, _certificate);
+                    }
+                }
+            }
+            
 
-            }
-            else
-            {
-                _cloud.GetFile(selectedFile, _userInformation.ID);
-                Console.WriteLine("Successfully download: {0}", selectedFile);
-                ServerTransaction.DecryptFile(selectedFile, "decrypted.exe", (RSACryptoServiceProvider)_certificate.PrivateKey);
-                Console.WriteLine("Successfully decrypted");
-            }
+
+            EnableAll();
+            statusBar.Items.Remove(statusLabel);
         }
 
+        private async void refreshFilesButton_Click(object sender, EventArgs e)
+        {
+            DisableAll();
+            var statusLabel = new ToolStripStatusLabel("Refreshing files");
+            statusBar.Items.Add(statusLabel);
+
+            filesListBox.DataSource = await _cloud.GetFilesListAsync(_currentUser);
+
+            EnableAll();
+            statusBar.Items.Remove(statusLabel);
+        }
+
+        private async void deleteFilesButton_Click(object sender, EventArgs e)
+        {
+            DisableAll();
+            var statusLabel = new ToolStripStatusLabel("Deleting files");
+            statusBar.Items.Add(statusLabel);
+
+            var selectedFiles = filesListBox.SelectedItems;
+            foreach (CloudFile file in selectedFiles)
+            {
+                statusLabel.Text = string.Format("Deleting {0}", file.Name);
+                await _cloud.DeleteFileAsync(_currentUser, file.Name);
+            }
+
+            statusLabel.Text = "Refreshing files";
+            filesListBox.DataSource = await _cloud.GetFilesListAsync(_currentUser);
+
+            EnableAll();
+            statusBar.Items.Remove(statusLabel);
+        }
+
+        private void ClearProperties()
+        {
+            _cloud = new Dropbox();
+            _currentUser = null;
+            groupsListBox.DataSource = null;
+            usersListBox.DataSource = null;
+            filesListBox.DataSource = null;
+        }
+
+        private async Task UpdateGroupList()
+        {
+            groupsListBox.DataSource = await _cloud.GetGroupListAsync();
+        }
+
+        private async Task ConnectToGroup(string group)
+        {
+            _connectedToGroup = true;
+            ReloadButtonState();
+            _cloud = new Dropbox(group);
+            usersListBox.DataSource = await _cloud.GetUsersListAsync(_currentUser);
+            filesListBox.DataSource = await _cloud.GetFilesListAsync(_currentUser);
+        }
+
+        private void DisconnectFromGroup()
+        {
+            _connectedToGroup = false;
+            ReloadButtonState();
+            ClearProperties();
+            DisableFiles();
+            DisableUsers();
+            DisableGroups();
+        }
+
+        private async Task ConnectUser()
+        {
+            DisconnectFromGroup();
+            _connected = true;
+            ReloadButtonState();
+            await UpdateGroupList();
+        }
+
+        private void DisconnectUser()
+        {
+            _connected = false;
+            loginLabel.Text = "Unconnected";
+            DisconnectFromGroup();
+        }
+
+        
+        #region Interfaces states controls
         private void ReloadButtonState()
         {
             newGroupButton.Enabled = _connected;
             connectToGroupButton.Enabled = _connected;
             sendFilesButton.Enabled = _connected && _connectedToGroup;
             downloadFilesButton.Enabled = _connected && _connectedToGroup;
+            refreshFilesButton.Enabled = _connected && _connectedToGroup;
         }
 
-        private void ClearProperties()
+        private void DisableIdentity()
         {
-            _cloud = new DropboxApi();
-            _userInformation = new Client.ClientData.UserInfo();
-            groupsListBox.DataSource = null;
-            usersListBox.DataSource = null;
-            filesListBox.DataSource = null;
+            identityPanel.Enabled = false;
         }
 
-        private void UpdateGroupList()
+        private void DisableGroups()
         {
-            groupsListBox.DataSource = _cloud.GetGroupsNamesList();
+            groupsPanel.Enabled = false;
         }
 
-        
+        private void DisableUsers()
+        {
+            usersPanel.Enabled = false;
+        }
 
-       
+        private void DisableFiles()
+        {
+            filesPanel.Enabled = false;
+        }
 
-        
+        private void DisableAll()
+        {
+            DisableIdentity();
+            DisableGroups();
+            DisableUsers();
+            DisableFiles();
+        }
 
-        
+        private void EnableIdentity()
+        {
+            identityPanel.Enabled = true;
+        }
 
-        
+        private void EnableGroups()
+        {
+            groupsPanel.Enabled = true;
+        }
 
-        
+        private void EnableUsers()
+        {
+            usersPanel.Enabled = true;
+        }
+
+        private void EnabledFiles()
+        {
+            filesPanel.Enabled = true;
+        }
+
+        private void EnableAll()
+        {
+            EnableIdentity();
+            EnableGroups();
+            EnableUsers();
+            EnabledFiles();
+        }
+        #endregion
     }
 }

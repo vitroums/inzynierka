@@ -18,8 +18,7 @@ class ClientServerHandler(ServerHandlerHelper):
         """
         Tworzy handler dla serwera. Pobiera instancje klasy konfiguracji
         """
-        print("client")
-        print(request.getpeercert())
+        
         self.__ca = CertificateAuthority()
         self.__dropboxApiHandler = DropboxApi()
         super().__init__(request, client_address, server)
@@ -41,7 +40,7 @@ class ClientServerHandler(ServerHandlerHelper):
                     else:
                         self._sendString("unknown-command")        
             elif command == "connect":
-                pass
+                self.__connectCommand()
             else:
                 self.__commandError(command)
         except ResponseError as error:
@@ -51,6 +50,9 @@ class ClientServerHandler(ServerHandlerHelper):
         except AuthenticationError as error:
             print(error)
 
+    def __connectCommand(self):
+        self.__authenticateUser()
+
     def __newUserCommand(self):
         """
         Obsługuję proces tworzenia nowego użytkownika
@@ -59,17 +61,15 @@ class ClientServerHandler(ServerHandlerHelper):
         if self.__doesUserExist(name, mail):
             self._sendString("user-exists")
             return
-        informations, keysPassword, rescuePassword = self.__requestUserInformations()
+        informations = self.__requestUserInformations()
         uuid = str(uuid1())
-        keys, certificate = self.__ca.newCertificate(informations, keysPassword, uuid, mail)
+        keys, certificate = self.__ca.newCertificate(informations, uuid, mail)
         if self.__addUserToCloud(name, mail, uuid, certificate):
             self._sendString("user-added")
-            self.__sendNewUserFiles(keys, uuid)
+            self.__sendNewUserFiles(keys)
             response = self._receiveString()
             if response != "everything-ok":
                 self.__responseError("everything-ok", response)
-            with open("/".join([self._configuration.passwordsDir, uuid]), "w") as passwordFile:
-                passwordFile.write(md5(rescuePassword.encode(self._configuration.encoding)).hexdigest())
         else:
             self._sendString("problem-while-adding-user")
             os.remove(keys)
@@ -130,21 +130,9 @@ class ClientServerHandler(ServerHandlerHelper):
         if response != "user-data":
             self.__responseError("user-data", response)
         data = self._receiveString().split(";")
-        
-        self._sendString("provide-keys-password")
-        response = self._receiveString()
-        if response != "keys-password":
-            self.__responseError("keys-password", response)
-        keysPassword = self._receiveString()
-        
-        self._sendString("provide-rescue-password")
-        response = self._receiveString()
-        if response != "rescue-password":
-            self.__responseError("rescue-password", response)
-        rescuePassword = self._receiveString()
-
+      
         return {self._configuration.informationsKeys[i]:data[i]
-                for i in range(0, len(self._configuration.informationsKeys))}, keysPassword, rescuePassword
+                for i in range(0, len(self._configuration.informationsKeys))}
 
     def __generateCertificate(self, informations, password, uuid):
         """
@@ -182,19 +170,16 @@ class ClientServerHandler(ServerHandlerHelper):
         else:
             return True
 
-    def __sendNewUserFiles(self, certificate, uuid):
+    def __sendNewUserFiles(self, keys):
         """
-        Wysłanie plików certyfikatu i klucza do użytkownika.
+        Wysłanie kluczy.
 
         Args:
             certificate (str): Ścieżka do pliku certyfikatu.
-            uuid (str): ID użytkownika.
         """
         self._sendString("certificate-file")
-        self._sendFile(certificate)
-        os.remove(certificate)
-        self._sendString("user-id")
-        self._sendString(uuid)
+        self._sendFile(keys)
+        os.remove(keys)
         
     def __authenticateUser(self):
         """
@@ -204,23 +189,14 @@ class ClientServerHandler(ServerHandlerHelper):
             bool, str, str, str: True jeśli użytkownik zostanie poprawnie zweryfikowany, False jeśli nie.
                 Przy udanym sprawdzeniu toższsamości użytkownika, zwraca jego dane.
         """
-        self._sendString("provide-user-id")
-        response = self._receiveString()
-        if response != "user-id":
-            self.__responseError("user-id", response)
-        id = self._receiveString()
-
-        self._sendString("provide-user-name")
-        response = self._receiveString()
-        if response != "user-name":
-            self.__responseError("user-name", response)
-        name = self._receiveString()
-
-        self._sendString("provide-user-mail")
-        response = self._receiveString()
-        if response != "user-mail":
-            self.__responseError("user-mail", response)
-        mail = self._receiveString()
+        if self.request.getpeercert():
+            try:
+                mail = self.request.getpeercert()["subject"][6][0][1]
+                name, id= self.request.getpeercert()["subject"][5][0][1].split(";")
+            except:
+                raise AuthenticationError("Problem with certificate")
+        else:
+            raise AuthenticationError("Problem with certificate")
 
         if not self.__doesUserExist(name, mail, id):
             self._sendString("user-doesnt-exist")

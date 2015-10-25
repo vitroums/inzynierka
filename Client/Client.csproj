@@ -46,15 +46,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Certificate.cs" />
-    <Compile Include="Certificates.cs" />
-    <Compile Include="ClientData\UserInfo.cs" />
+    <Compile Include="Certificates\UserCertificate.cs" />
+    <Compile Include="Certificates\Certificates.cs" />
+    <Compile Include="Clients\User.cs" />
+    <Compile Include="Cloud\CloudFile.cs" />
+    <Compile Include="Configuration.cs" />
+    <Compile Include="Cryptography\Decrypt.cs" />
+    <Compile Include="Cryptography\Encrypt.cs" />
+    <Compile Include="Cryptography\Hasher.cs" />
     <Compile Include="Errors\AuthenticationError.cs" />
-    <Compile Include="DropboxApi.cs" />
+    <Compile Include="Cloud\Dropbox.cs" />
+    <Compile Include="Errors\CertificateError.cs" />
+    <Compile Include="Errors\CloudException.cs" />
     <Compile Include="Errors\ServerResponseError.cs" />
-    <Compile Include="Rest.cs" />
-    <Compile Include="ServerData\GroupInfo.cs" />
-    <Compile Include="ServerData\UserCertificateInfo.cs" />
+    <Compile Include="Errors\UnknownCertificateError.cs" />
+    <Compile Include="Groups\Group.cs" />
+    <Compile Include="Certificates\CertificateInfo.cs" />
     <Compile Include="ServerTransaction.cs" />
     <Compile Include="Errors\UnknownCommandError.cs" />
     <Compile Include="SslClient.cs" />

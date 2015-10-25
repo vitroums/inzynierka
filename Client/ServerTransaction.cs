@@ -1,10 +1,8 @@
-﻿using System;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
+﻿using Client.Errors;
+using Client.Clients;
+using Client.Groups;
+using Client.Certificates;
 using System.Text;
-using Client.Errors;
-using Client.ClientData;
-using Client.ServerData;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -12,31 +10,30 @@ namespace Client
 {
     public class ServerTransaction
     {
-        private static string ip = "127.0.0.1";
-        private static int port = 12345;
+        private static Configuration _configuration = Configuration.Instance;
 
-        public static string CreateNewUser(UserCertificateInfo certificateInformation, string keysPassword, string rescuePassword, string outputPath)
+        public async static Task<bool> CreateNewUser(CertificateInfo certificateInformation, string outputPath)
         {
-            string response, id;
+            string response;
 
-            using (SslClient stream = new SslClient(ip, port))
+            using (SslClient stream = new SslClient(_configuration.IP, _configuration.Port))
             {
-                stream.SendString("new-user");
-                response =  stream.ReceiveString();
+                await stream.SendStringAsync("new-user");
+                response = await stream.ReceiveStringAsync();
                 if (response != "provide-user-name")
                 {
                     UnknownCommandError("provide-user-name", response);
                 }
-                stream.SendString("user-name");
-                stream.SendString(certificateInformation.CommonName);
-                response =  stream.ReceiveString();
+                await stream.SendStringAsync("user-name");
+                await stream.SendStringAsync(certificateInformation.CommonName);
+                response = await stream.ReceiveStringAsync();
                 if (response != "provide-user-mail")
                 {
                     UnknownCommandError("provide-user-mail", response);
                 }
-                stream.SendString("user-mail");
-                stream.SendString(certificateInformation.Email);
-                response =  stream.ReceiveString();
+                await stream.SendStringAsync("user-mail");
+                await stream.SendStringAsync(certificateInformation.Email);
+                response = await stream.ReceiveStringAsync();
                 if (response == "user-exists")
                 {
                     ServerResponseError(response);
@@ -45,23 +42,9 @@ namespace Client
                 {
                     UnknownCommandError("provide-user-data", response);
                 }
-                stream.SendString("user-data");
-                stream.SendString(certificateInformation.ToString());
-                response =  stream.ReceiveString();
-                if (response != "provide-keys-password")
-                {
-                    UnknownCommandError("provide-keys-password", response);
-                }
-                stream.SendString("keys-password");
-                stream.SendString(keysPassword);
-                response =  stream.ReceiveString();
-                if (response != "provide-rescue-password")
-                {
-                    UnknownCommandError("provide-rescue-password", response);
-                }
-                stream.SendString("rescue-password");
-                stream.SendString(rescuePassword);
-                response =  stream.ReceiveString();
+                await stream.SendStringAsync("user-data");
+                await stream.SendStringAsync(certificateInformation.ToString());
+                response = await stream.ReceiveStringAsync();
                 if (response == "problem-while-adding-user")
                 {
                     ServerResponseError(response);
@@ -70,50 +53,23 @@ namespace Client
                 {
                     UnknownCommandError("user-added", response);
                 }
-                response =  stream.ReceiveString();
+                response = await stream.ReceiveStringAsync();
                 if (response != "certificate-file")
                 {
                     UnknownCommandError("certificate-file", response);
                 }
-                stream.ReceiveFile(outputPath + certificateInformation.CommonName + ".pfx");
-                response =  stream.ReceiveString();
-                if (response != "user-id")
-                {
-                    UnknownCommandError("user-id", response);
-                }
-                id =  stream.ReceiveString();
-                stream.SendString("everything-ok");
+                Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+                await stream.ReceiveFileAsync(outputPath);
+                await stream.SendStringAsync("everything-ok");
             }
 
-            return id;
+            return true;
         }
 
-        private static bool Authenticate(SslClient stream, UserInfo user)
+        private async static Task<bool> Authenticate(SslClient stream, User user)
         {
             string response;
-            stream.SendString("login");
-            response =  stream.ReceiveString();
-            if (response != "provide-user-id")
-            {
-                UnknownCommandError("provide-user-id", response);
-            }
-            stream.SendString("user-id");
-            stream.SendString(user.ID);
-            response =  stream.ReceiveString();
-            if (response != "provide-user-name")
-            {
-                UnknownCommandError("provide-user-name", response);
-            }
-            stream.SendString("user-name");
-            stream.SendString(user.Name);
-            response =  stream.ReceiveString();
-            if (response != "provide-user-mail")
-            {
-                UnknownCommandError("provide-user-mail", response);
-            }
-            stream.SendString("user-mail");
-            stream.SendString(user.Email);
-            response =  stream.ReceiveString();
+            response = await stream.ReceiveStringAsync();
             if (response == "user-doesnt-exist")
             {
                 AuthenticationError(response);
@@ -129,29 +85,30 @@ namespace Client
             return true;
         }
 
-        public static bool CreateNewGroup(GroupInfo group, UserInfo user, Certificate certificate)
+        public async static Task<bool> CreateNewGroup(Group group, UserCertificate certificate)
         {
             string response;
 
-            using (SslClient stream = new SslClient(ip, port, certificate))
+            using (SslClient stream = new SslClient(_configuration.IP, _configuration.Port, certificate))
             {
-                Authenticate(stream, user);
-                stream.SendString("new-group");
-                response =  stream.ReceiveString();
+                await stream.SendStringAsync("login");
+                await Authenticate(stream, new User(certificate));
+                await stream.SendStringAsync("new-group");
+                response = await stream.ReceiveStringAsync();
                 if (response != "provide-group-name")
                 {
                     UnknownCommandError("provide-group-name", response);
                 }
-                stream.SendString("group-name");
-                stream.SendString(group.Name);
-                response =  stream.ReceiveString();
+                await stream.SendStringAsync("group-name");
+                await stream.SendStringAsync(group.Name);
+                response = await stream.ReceiveStringAsync();
                 if (response != "provide-group-password")
                 {
                     UnknownCommandError("provide-group-password", response);
                 }
-                stream.SendString("group-password");
-                stream.SendString(group.Password);
-                response =  stream.ReceiveString();
+                await stream.SendStringAsync("group-password");
+                await stream.SendStringAsync(group.Password);
+                response = await stream.ReceiveStringAsync();
                 if (response == "group-exists")
                 {
                     ServerResponseError(response);
@@ -166,13 +123,14 @@ namespace Client
 
         }
 
-        public static bool Connect(Certificate certificate)
+        public async static Task<bool> Connect(UserCertificate certificate)
         {
             try
             {
-                using (SslClient stream = new SslClient(ip, port, certificate))
+                using (SslClient stream = new SslClient(_configuration.IP, _configuration.Port, certificate))
                 {
-                    stream.SendString("connect");
+                    await stream.SendStringAsync("connect");
+                    await Authenticate(stream, new User(certificate));
                 }
             }
             catch (AuthenticationError)
@@ -180,189 +138,6 @@ namespace Client
                 return false;
             }
             return true;
-        }
-
-        public static void DecryptFile(string inFile, string outFile, RSACryptoServiceProvider rsaProvider)
-        {
-            RSACryptoServiceProvider rsaPrivateKey = rsaProvider;
-            // Create instance of AesManaged for
-            // symetric decryption of the data.
-            using (AesManaged aesManaged = new AesManaged())
-            {
-                aesManaged.KeySize = 256;
-                aesManaged.BlockSize = 128;
-                aesManaged.Mode = CipherMode.CBC;
-
-                // Create byte arrays to get the length of
-                // the encrypted key and IV.
-                // These values were stored as 4 bytes each
-                // at the beginning of the encrypted package.
-                byte[] LenK = new byte[4];
-                byte[] LenIV = new byte[4];
-
-                // Consruct the file name for the decrypted file.
-
-                // Use FileStream objects to read the encrypted
-                // file (inFs) and save the decrypted file (outFs).
-                using (FileStream inFs = new FileStream(inFile, FileMode.Open))
-                {
-
-                    inFs.Seek(0, SeekOrigin.Begin);
-                    inFs.Seek(0, SeekOrigin.Begin);
-                    inFs.Read(LenK, 0, 3);
-                    inFs.Seek(4, SeekOrigin.Begin);
-                    inFs.Read(LenIV, 0, 3);
-
-                    // Convert the lengths to integer values.
-                    int lenK = BitConverter.ToInt32(LenK, 0);
-                    int lenIV = BitConverter.ToInt32(LenIV, 0);
-
-                    // Determine the start postition of
-                    // the ciphter text (startC)
-                    // and its length(lenC).
-                    int startC = lenK + lenIV + 8;
-                    int lenC = (int)inFs.Length - startC;
-
-                    // Create the byte arrays for
-                    // the encrypted AesManaged key,
-                    // the IV, and the cipher text.
-                    byte[] KeyEncrypted = new byte[lenK];
-                    byte[] IV = new byte[lenIV];
-
-                    // Extract the key and IV
-                    // starting from index 8
-                    // after the length values.
-                    inFs.Seek(8, SeekOrigin.Begin);
-                    inFs.Read(KeyEncrypted, 0, lenK);
-                    inFs.Seek(8 + lenK, SeekOrigin.Begin);
-                    inFs.Read(IV, 0, lenIV);
-                    // Use RSACryptoServiceProvider
-                    // to decrypt the AesManaged key.
-                    byte[] KeyDecrypted = rsaPrivateKey.Decrypt(KeyEncrypted, false);
-
-                    // Decrypt the key.
-                    using (ICryptoTransform transform = aesManaged.CreateDecryptor(KeyDecrypted, IV))
-                    {
-
-                        // Decrypt the cipher text from
-                        // from the FileSteam of the encrypted
-                        // file (inFs) into the FileStream
-                        // for the decrypted file (outFs).
-                        using (FileStream outFs = new FileStream(outFile, FileMode.Create))
-                        {
-
-                            int count = 0;
-                            int offset = 0;
-
-                            int blockSizeBytes = aesManaged.BlockSize / 8;
-                            byte[] data = new byte[blockSizeBytes];
-
-                            // By decrypting a chunk a time,
-                            // you can save memory and
-                            // accommodate large files.
-
-                            // Start at the beginning
-                            // of the cipher text.
-                            inFs.Seek(startC, SeekOrigin.Begin);
-                            using (CryptoStream outStreamDecrypted = new CryptoStream(outFs, transform, CryptoStreamMode.Write))
-                            {
-                                do
-                                {
-                                    count = inFs.Read(data, 0, blockSizeBytes);
-                                    offset += count;
-                                    outStreamDecrypted.Write(data, 0, count);
-
-                                }
-                                while (count > 0);
-
-                                outStreamDecrypted.FlushFinalBlock();
-                                outStreamDecrypted.Close();
-                            }
-                            outFs.Close();
-                        }
-                        inFs.Close();
-                    }
-
-                }
-
-            }
-        }
-
-        public static void EncryptFile(string inFile, string outFile, string rsaPublicKeyPath)
-        {
-            RSACryptoServiceProvider rsaPublicKey = (RSACryptoServiceProvider)new X509Certificate2(rsaPublicKeyPath).PublicKey.Key;
-            using (AesManaged aesManaged = new AesManaged())
-            {
-                // Create instance of AesManaged for
-                // symetric encryption of the data.
-                aesManaged.KeySize = 256;
-                aesManaged.BlockSize = 128;
-                aesManaged.Mode = CipherMode.CBC;
-                using (ICryptoTransform transform = aesManaged.CreateEncryptor())
-                {
-                    RSAPKCS1KeyExchangeFormatter keyFormatter = new RSAPKCS1KeyExchangeFormatter(rsaPublicKey);
-                    byte[] keyEncrypted = keyFormatter.CreateKeyExchange(aesManaged.Key, aesManaged.GetType());
-
-                    // Create byte arrays to contain
-                    // the length values of the key and IV.
-                    byte[] LenK = new byte[4];
-                    byte[] LenIV = new byte[4];
-
-                    int lKey = keyEncrypted.Length;
-                    LenK = BitConverter.GetBytes(lKey);
-                    int lIV = aesManaged.IV.Length;
-                    LenIV = BitConverter.GetBytes(lIV);
-
-                    // Write the following to the FileStream
-                    // for the encrypted file (outFs):
-                    // - length of the key
-                    // - length of the IV
-                    // - ecrypted key
-                    // - the IV
-                    // - the encrypted cipher content
-                    using (FileStream outFs = new FileStream(outFile, FileMode.Create))
-                    {
-
-                        outFs.Write(LenK, 0, 4);
-                        outFs.Write(LenIV, 0, 4);
-                        outFs.Write(keyEncrypted, 0, lKey);
-                        outFs.Write(aesManaged.IV, 0, lIV);
-
-                        // Now write the cipher text using
-                        // a CryptoStream for encrypting.
-                        using (CryptoStream outStreamEncrypted = new CryptoStream(outFs, transform, CryptoStreamMode.Write))
-                        {
-
-                            // By encrypting a chunk at
-                            // a time, you can save memory
-                            // and accommodate large files.
-                            int count = 0;
-                            int offset = 0;
-
-                            // blockSizeBytes can be any arbitrary size.
-                            int blockSizeBytes = aesManaged.BlockSize / 8;
-                            byte[] data = new byte[blockSizeBytes];
-                            int bytesRead = 0;
-
-                            using (FileStream inFs = new FileStream(inFile, FileMode.Open))
-                            {
-                                do
-                                {
-                                    count = inFs.Read(data, 0, blockSizeBytes);
-                                    offset += count;
-                                    outStreamEncrypted.Write(data, 0, count);
-                                    bytesRead += blockSizeBytes;
-                                }
-                                while (count > 0);
-                                inFs.Close();
-                            }
-                            outStreamEncrypted.FlushFinalBlock();
-                            outStreamEncrypted.Close();
-                        }
-                        outFs.Close();
-                    }
-                }
-            }
         }
 
         private static void UnknownCommandError(string expected, string response)

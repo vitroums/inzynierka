@@ -1,10 +1,16 @@
-﻿namespace Client.ServerData
+﻿namespace Client.Groups
 {
-    public class GroupInfo
+    public class Group
     {
         public string Name { get; set; }
         public string Password { get; set; }
         public string RepeatPassword { get; set; }
+
+        public Group(string name, string password)
+        {
+            Name = name;
+            Password = password;
+        }
 
         public bool Validate()
         {

@@ -33,7 +33,7 @@ class CertificateAuthority(object):
             self.__certificate, self.__keys = self.__newCaCertificate()
         else:
             self.__certificate = self.__loadCertificateFromFile(self.__configuration.certificateFile)
-            self.__keys = self.__loadPrivateKeyFromFile(self.__configuration.keysFile, self.__configuration.caPassword)
+            self.__keys = self.__loadPrivateKeyFromFile(self.__configuration.keysFile)
         if not self.__keys:
             raise IOError
 
@@ -83,7 +83,7 @@ class CertificateAuthority(object):
         else:
             raise FileNotFoundError
 
-    def __loadPrivateKeyFromFile(self, path, password):
+    def __loadPrivateKeyFromFile(self, path):
         """
         Ładuje klucz prywatny z pliku i zwraca jako obiekt.
 
@@ -94,7 +94,7 @@ class CertificateAuthority(object):
             OpenSSL.crypto.PKey: Obiekt klucza.
         """
         try:
-            return crypto.load_privatekey(crypto.FILETYPE_PEM, self.__loadDataFromFile(path), password.encode(self.__configuration.encoding))
+            return crypto.load_privatekey(crypto.FILETYPE_PEM, self.__loadDataFromFile(path))
         except FileNotFoundError:
             print("Key file doesn't exist")
         except IOError:
@@ -131,7 +131,7 @@ class CertificateAuthority(object):
             certificate.set_pubkey(keys)
             certificate.sign(keys, self.__configuration.signMethod)
             self.__saveCertificate(self.__configuration.certificateFile, certificate)
-            self.__saveKeys(self.__configuration.keysFile, keys, self.__configuration.caPassword)
+            self.__saveKeys(self.__configuration.keysFile, keys)
             return certificate, keys
         except ValueError:
             print("CA's informations corrupted")
@@ -223,7 +223,7 @@ class CertificateAuthority(object):
         """
         return self.__saveFile(path, crypto.dump_certificate(crypto.FILETYPE_PEM, certificate))
     
-    def __saveKeys(self, path, key, password):
+    def __saveKeys(self, path, key):
         """
         Zapisuje certyfikat do pliku.
 
@@ -235,9 +235,9 @@ class CertificateAuthority(object):
         Return:
             bool: True jeśli zapis się powiódł
         """
-        return self.__saveFile(path, crypto.dump_privatekey(crypto.FILETYPE_PEM, key, None, password.encode(self.__configuration.encoding)))
+        return self.__saveFile(path, crypto.dump_privatekey(crypto.FILETYPE_PEM, key, None))
 
-    def newCertificate(self, informations, password, name, email):
+    def newCertificate(self, informations, name, email):
         """
         Tworzy nowy certyfikat wraz z parą kluczy.
 
@@ -261,12 +261,11 @@ class CertificateAuthority(object):
         certificate.set_pubkey(keys)
         certificate = self.__signCertificate(certificate)
         certificatePath = os.path.join(self.__configuration.certificatesDir, ".".join([name, "crt"]))
-        keysPath = os.path.join(self.__configuration.keysDir, ".".join([name, "key"]))
+        keyPath = ".".join([name, "pfx"])
         print(certificatePath)
         self.__saveCertificate(certificatePath, certificate)
-        self.__saveKeys(keysPath, keys, password)
         p12 = crypto.PKCS12()
         p12.set_certificate(certificate)
         p12.set_privatekey(keys)
-        open(".".join([name, "pfx"]), "wb").write(p12.export())
-        return ".".join([name, "pfx"]), certificatePath
+        open(keyPath, "wb").write(p12.export())
+        return keyPath, certificatePath

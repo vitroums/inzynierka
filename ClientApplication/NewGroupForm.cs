@@ -1,19 +1,16 @@
 ﻿using System.Windows.Forms;
-using Client.ServerData;
+using Client.Groups;
 using System;
 
 namespace ClientApplication
 {
     public partial class NewGroupForm : Form
     {
-        public GroupInfo NewGroupInfo { get; set; }
+        public Group NewGroupInfo { get; set; }
         public NewGroupForm()
         {
             InitializeComponent();
-            NewGroupInfo = new GroupInfo()
-            {
-                Name = nameTextBox.Text
-            };
+            NewGroupInfo = new Group(nameTextBox.Text, null);
         }
 
         private void nameTextBox_TextChanged(object sender, System.EventArgs e)

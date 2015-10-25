@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Windows.Forms;
-using Client.ServerData;
+using Client.Certificates;
 
 namespace ClientApplication
 {
     public partial class NewUserForm : Form
     {
-        public UserCertificateInfo NewUserInfo { get; private set; }
+        public CertificateInfo NewUserInfo { get; private set; }
+        public string PathToSave { get; private set; }
+
         public NewUserForm()
         {
             InitializeComponent();
-            NewUserInfo = new UserCertificateInfo()
+            NewUserInfo = new CertificateInfo()
             {
                 Country = countryTextBox.Text,
                 State = stateTextBox.Text,
@@ -76,6 +78,7 @@ namespace ClientApplication
             else
             {
                 DialogResult = DialogResult.OK;
+                PathToSave = pathTextBox.Text + "\\" + commonNameTextBox.Text + ".pfx";
                 Close();
             }
         }
@@ -88,7 +91,16 @@ namespace ClientApplication
 
         private void NewUserForm_Load(object sender, EventArgs e)
         {
-            
+            pathTextBox.Text = Application.StartupPath + "\\Certificates";
+        }
+
+        private void selectPathButton_Click(object sender, EventArgs e)
+        {
+            var folderBroswerDialog = new FolderBrowserDialog();
+            if (folderBroswerDialog.ShowDialog() == DialogResult.OK)
+            {
+                pathTextBox.Text = folderBroswerDialog.SelectedPath;
+            }
         }
     }
 }

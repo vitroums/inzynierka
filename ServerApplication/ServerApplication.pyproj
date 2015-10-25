@@ -70,6 +70,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Konwencja.txt" />
+    <Content Include="Program.cs" />
     <Content Include="Protokół.docx" />
   </ItemGroup>
   <ItemGroup>

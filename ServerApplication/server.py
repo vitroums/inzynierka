@@ -1,10 +1,10 @@
-﻿from socketserver import TCPServer, ThreadingMixIn
+﻿from socketserver import TCPServer
 from ssl import wrap_socket, CERT_OPTIONAL
 from handlers.client_server_handler import ClientServerHandler
 from utils.configuration import Configuration
 
 
-class ClientServer(ThreadingMixIn, TCPServer):
+class ClientServer(TCPServer):
     """
     Głowny serwer aplikacji. Działa na protokole TCP. Każde połączenie obsługiwane jest w osobnym wątku.
     Połączenia szyfrowane są protokołem SSL.
@@ -22,7 +22,7 @@ class ClientServer(ThreadingMixIn, TCPServer):
         """
         super().server_bind()
         self.socket = wrap_socket(self.socket, cert_reqs=CERT_OPTIONAL, server_side = True, 
-                                  ca_certs=self.__configuration.certificateFile, certfile = self.__configuration.certificateFile, keyfile = self.__configuration.keysFile, do_handshake_on_connect=False)        
+                                  ca_certs=self.__configuration.certificateFile, certfile=self.__configuration.certificateFile, keyfile=self.__configuration.keysFile, do_handshake_on_connect=True)
 
     def get_request(self):
         """
@@ -33,5 +33,4 @@ class ClientServer(ThreadingMixIn, TCPServer):
         """
         (socket, address) = super().get_request()
         print("New connection from:", address)
-        socket.do_handshake()
         return (socket, address)
