@@ -397,6 +397,14 @@ namespace ClientApplication
             sendFilesButton.Enabled = _connected && _connectedToGroup;
             downloadFilesButton.Enabled = _connected && _connectedToGroup;
             refreshFilesButton.Enabled = _connected && _connectedToGroup;
+            if (_identitiesList.Count == 0)
+            {
+                connectButton.Enabled = false;
+            }
+            else
+            {
+                connectButton.Enabled = true;
+            }
         }
 
         private void DisableIdentity()

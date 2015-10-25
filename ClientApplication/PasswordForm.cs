@@ -36,5 +36,18 @@ namespace ClientApplication
             DialogResult = DialogResult.Cancel;
             Close();
         }
+
+
+        private void textBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                okButton_Click(this, new EventArgs());
+            }
+            else if (e.KeyCode == Keys.Escape)
+            {
+                cancelButton_Click(this, new EventArgs());
+            }
+        }
     }
 }
