@@ -31,7 +31,7 @@
         self.__caInformations = {"country":"PL", "state":"Pomorskie", "city":"Gdańsk", "organization":"PG", "unit":"ETI", "name":"PKI Cloud"}
         self.__informationsKeys = ["country", "state", "city", "organization", "unit", "name"]
         self.__notBefore = 0
-        self.__notAfter = 10*356*24*60*60
+        self.__notAfter = 356*24*60*60
         self.__signMethod = "sha1"
         self.__encoding = "utf-8"
         self.__bufferSize = 1024

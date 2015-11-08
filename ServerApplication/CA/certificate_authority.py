@@ -129,7 +129,13 @@ class CertificateAuthority(object):
             keys = self.__generateKeys()
             certificate.set_issuer(certificate.get_subject())
             certificate.set_pubkey(keys)
+            certificate.set_version(2)
+            certificate.add_extensions([
+            crypto.X509Extension(b"basicConstraints", True, b"CA:TRUE"),
+            crypto.X509Extension(b"keyUsage", False, b"digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment, keyAgreement, keyCertSign, cRLSign"),
+            crypto.X509Extension(b"extendedKeyUsage", False, b"serverAuth")])
             certificate.sign(keys, self.__configuration.signMethod)
+
             self.__saveCertificate(self.__configuration.certificateFile, certificate)
             self.__saveKeys(self.__configuration.keysFile, keys)
             return certificate, keys
@@ -138,7 +144,7 @@ class CertificateAuthority(object):
         except IOError:
             print("Problem with saving files")
  
-    def __generateCertificate(self, informations, uuid=None, email=None):
+    def __generateCertificate(self, informations, email=None):
         """
         Generuje certyfikat na podstawie podanych informacji.
 
@@ -161,11 +167,8 @@ class CertificateAuthority(object):
         certificate.get_subject().L = informations["city"]
         certificate.get_subject().O = informations["organization"]
         certificate.get_subject().OU = informations["unit"]
-        if uuid:
-            commonName = ";".join([informations["name"], uuid])
-        else:
-            commonName = informations["name"];
-        certificate.get_subject().CN = commonName
+        certificate.set_version(2)
+        certificate.get_subject().CN = informations["name"]
         if email:
             certificate.get_subject().emailAddress = email
         certificate.set_serial_number(1000)
@@ -256,13 +259,19 @@ class CertificateAuthority(object):
             ValueError: Jeśli informacje nie zawierają wszystkich kluczy
             IOError: Jeśli wystąpiły problemy z zapisem plików
         """
-        certificate = self.__generateCertificate(informations, name, email)
+        certificate = self.__generateCertificate(informations, email)
         keys = self.__generateKeys()
         certificate.set_pubkey(keys)
+        certificate.add_extensions([
+            crypto.X509Extension(b"basicConstraints", False, b"CA:FALSE"),
+            crypto.X509Extension(b"keyUsage", False, b"digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment, keyAgreement"),
+            crypto.X509Extension(b"extendedKeyUsage", False, b"emailProtection, clientAuth"),
+            crypto.X509Extension(b"subjectAltName", False, b"DNS:" + name.encode())])
+        
+
         certificate = self.__signCertificate(certificate)
         certificatePath = os.path.join(self.__configuration.certificatesDir, ".".join([name, "crt"]))
         keyPath = ".".join([name, "pfx"])
-        print(certificatePath)
         self.__saveCertificate(certificatePath, certificate)
         p12 = crypto.PKCS12()
         p12.set_certificate(certificate)

@@ -133,7 +133,7 @@ namespace Client
                     await Authenticate(stream, new User(certificate));
                 }
             }
-            catch (AuthenticationError)
+            catch (AuthenticationError error)
             {
                 return false;
             }

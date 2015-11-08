@@ -2,7 +2,7 @@
 
 namespace Client.Errors
 {
-    class CloudException : Exception
+    public class CloudException : Exception
     {
         public CloudException(string message) : base(message) { }
     }

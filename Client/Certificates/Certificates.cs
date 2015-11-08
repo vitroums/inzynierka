@@ -15,13 +15,16 @@ namespace Client.Certificates
 
             foreach (var certificate in certificatesStore.Certificates)
             {
-                try
+                if (certificate.HasPrivateKey)
                 {
-                    certificates.Add(new UserCertificate(certificate));
-                }
-                catch (UnknownCertificateError)
-                {
-                    ;
+                    try
+                    {
+                        certificates.Add(new UserCertificate(certificate));
+                    }
+                    catch (UnknownCertificateError)
+                    {
+                        ;
+                    }
                 }
             }
             certificatesStore.Close();
@@ -30,13 +33,16 @@ namespace Client.Certificates
             certificatesStore.Open(OpenFlags.ReadOnly);
             foreach (var certificate in certificatesStore.Certificates)
             {
-                try
+                if (certificate.HasPrivateKey)
                 {
-                    certificates.Add(new UserCertificate(certificate));
-                }
-                catch (UnknownCertificateError)
-                {
-                    ;
+                    try
+                    {
+                        certificates.Add(new UserCertificate(certificate));
+                    }
+                    catch (UnknownCertificateError)
+                    {
+                        ;
+                    }
                 }
             }
             certificatesStore.Close();

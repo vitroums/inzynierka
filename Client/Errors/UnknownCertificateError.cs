@@ -2,7 +2,7 @@
 
 namespace Client.Errors
 {
-    class UnknownCertificateError : Exception
+    public class UnknownCertificateError : Exception
     {
         public UnknownCertificateError(string message) : base(message)
         {

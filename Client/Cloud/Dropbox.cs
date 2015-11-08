@@ -51,7 +51,7 @@ namespace Client.Cloud
             }
             catch (Exception)
             {
-                throw;
+                throw new CloudException("Couldn't connect to cloud");
             }
         }
 

@@ -35,7 +35,7 @@ namespace Client
                 _stream = new SslStream(GetStream(), false, ServerCertificateValidation, UserCertificateSelection);
                 _stream.AuthenticateAsClient(ip);
             }
-            catch (AuthenticationException)
+            catch (AuthenticationException err)
             {
                 ErrorOnAuthentication();
             }
@@ -208,7 +208,10 @@ namespace Client
 
         protected override void Dispose(bool disposing)
         {
-            _stream.Dispose();
+            if (_stream != null)
+            {
+                _stream.Dispose();
+            }
             base.Dispose(disposing);
         }
     }

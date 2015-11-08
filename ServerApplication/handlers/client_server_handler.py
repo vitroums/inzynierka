@@ -192,7 +192,8 @@ class ClientServerHandler(ServerHandlerHelper):
         if self.request.getpeercert():
             try:
                 mail = self.request.getpeercert()["subject"][6][0][1]
-                name, id= self.request.getpeercert()["subject"][5][0][1].split(";")
+                name = self.request.getpeercert()["subject"][5][0][1]
+                id = self.request.getpeercert()["subjectAltName"][0][1]
             except:
                 raise AuthenticationError("Problem with certificate")
         else:

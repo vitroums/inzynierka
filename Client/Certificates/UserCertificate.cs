@@ -57,7 +57,7 @@ namespace Client.Certificates
 
         public override string ToString()
         {
-            return GetNameInfo(X509NameType.SimpleName, false).Split(';')[0];
+            return GetNameInfo(X509NameType.SimpleName, false);
         }
 
         public string CommonName
@@ -72,7 +72,8 @@ namespace Client.Certificates
         {
             get
             {
-                return GetNameInfo(X509NameType.SimpleName, false).Split(';')[1];
+
+                return GetNameInfo(X509NameType.DnsFromAlternativeName, false);
             }
         }
 
