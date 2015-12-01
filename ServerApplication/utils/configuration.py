@@ -32,7 +32,7 @@
         self.__informationsKeys = ["country", "state", "city", "organization", "unit", "name"]
         self.__notBefore = 0
         self.__notAfter = 356*24*60*60
-        self.__signMethod = "sha1"
+        self.__signMethod = "sha512"
         self.__encoding = "utf-8"
         self.__bufferSize = 1024
         self.__dropboxApiKey = "q7RSg2cm1vAAAAAAAAAAC7sy1AfF2zsSStdhuG0KdJs3ieupiQ6A2Izek-5r8DE-"
