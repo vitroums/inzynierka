@@ -50,5 +50,19 @@ namespace Client.Certificates
 
             return certificates;
         }
+
+        public static bool CheckCaCertificate()
+        {
+            var certificatesStore = new X509Store(StoreName.Root ,StoreLocation.CurrentUser);
+            certificatesStore.Open(OpenFlags.ReadOnly);
+            foreach (var certificate in certificatesStore.Certificates)
+            {
+                if (certificate.GetNameInfo(X509NameType.SimpleName, false).Equals("PKI Cloud"))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }

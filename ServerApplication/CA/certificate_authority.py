@@ -1,6 +1,7 @@
 ﻿from OpenSSL import crypto, SSL
 import os
 from utils.configuration import Configuration
+from dropbox_api import DropboxApi
 
 class CertificateAuthority(object):
     """
@@ -137,6 +138,8 @@ class CertificateAuthority(object):
             certificate.sign(keys, self.__configuration.signMethod)
 
             self.__saveCertificate(self.__configuration.certificateFile, certificate)
+            with DropboxApi() as cloud:
+                cloud.sendFile(self.__configuration.certificateFile, self.__configuration.certificateFile)
             self.__saveKeys(self.__configuration.keysFile, keys)
             return certificate, keys
         except ValueError:

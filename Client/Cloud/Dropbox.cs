@@ -155,7 +155,7 @@ namespace Client.Cloud
             }
         }
 
-        private async Task DownloadFileAsync(string path, string file, string rootPath = null)
+        public async Task DownloadFileAsync(string path, string file, string rootPath = null)
         {
             try
             {

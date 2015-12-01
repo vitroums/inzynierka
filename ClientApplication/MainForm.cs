@@ -370,7 +370,7 @@ namespace ClientApplication
                         await _cloud.DownloadCertificateAsync(tempCertificate, user);
                         certificates.Add(tempCertificate);
                     }
-                    var certificatesStore = new X509Store(StoreLocation.CurrentUser);
+                    var certificatesStore = new X509Store(StoreName.AddressBook, StoreLocation.CurrentUser);
                     certificatesStore.Open(OpenFlags.ReadWrite);
                     foreach (var certificate in certificates)
                     {
@@ -622,8 +622,38 @@ namespace ClientApplication
             EnableUsers();
             EnabledFiles();
         }
+
         #endregion
 
+        private async void MainForm_Load(object sender, EventArgs e)
+        {
+            if (!CertificatesProcess.CheckCaCertificate())
+            {
+                Cursor = Cursors.WaitCursor;
+                DisableAll();
+                var statusLabel = new ToolStripStatusLabel("Adding server certificate to Windows Certificate Store");
+                statusBar.Items.Add(statusLabel);
+                try
+                {
+                    var certificatesStore = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
+                    certificatesStore.Open(OpenFlags.ReadWrite);
+                    var tempCertificate = Path.GetTempFileName();
+                    Dropbox cloud = new Dropbox();
+                    await cloud.DownloadFileAsync(tempCertificate, "cert.crt");
+                    certificatesStore.Add(new X509Certificate2(tempCertificate));
+                    certificatesStore.Close();
+                    File.Delete(tempCertificate);
+                }
+                catch
+                {
 
+                }
+                EnableIdentity();
+                if (_connected)
+                    EnableGroups();
+                statusBar.Items.Remove(statusLabel);
+                Cursor = Cursors.Arrow;
+            }
+        }
     }
 }
